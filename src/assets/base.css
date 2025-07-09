@@ -1,0 +1,23 @@
+*{
+  box-sizing: border-box;
+}
+body{
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%; /* 关键：让 html/body 占满视口高度 */
+  margin: 0; /* 清除默认边距 */
+}
+
+.page-container {
+  display: flex;          /* 启用 Flex 布局 */
+  flex-direction: column; /* 子元素垂直排列 */
+  min-height: 100vh;      /* 最小高度占满视口 */
+}
+
+main {
+  flex: 1;                /* 主内容区域占据剩余所有空间 */
+}
