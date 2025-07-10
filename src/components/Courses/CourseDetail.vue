@@ -16,7 +16,6 @@
         <el-col :xs="24" :sm="24" :md="16" :lg="17" class="main-content-left">
           <CourseTabs
               :chapters="chapters"
-              :videos="chaptersVideos"
               :assignments="assignments"
               :exams="exams"
               :discussions="discussions"
@@ -741,21 +740,11 @@ export default {
           console.log(progressRes.data[0]);
           totalLessonsCompleted.value = progressRes.data[0].completed_lessons;
           courseProgress.value = progressRes.data[0].progress;
-
         } else {
           ElMessage.warning('获取课程进度失败: ' + progressRes.msg);
           totalLessonsCompleted.value = 0;
           courseProgress.value = 0;
         }
-
-        // // 加载相关数据
-        // await Promise.all([
-        //   loadChapters(),
-        //   loadAssignments(), // 仍使用mockApi，无对应真实API
-        //   loadExams(), // 仍使用mockApi，无对应真实API
-        //   loadDiscussions(), // 仍使用mockApi，无对应真实API
-        //   loadRecommendedCourses() // 仍使用mockApi，无对应真实API
-        // ]);
       } catch (error) {
         ElMessage.error('获取课程详情或进度失败');
         console.error('获取课程详情或进度失败:', error);
@@ -770,8 +759,9 @@ export default {
         const chaptersRes = await studentCourseApi.getLessonsRes(courseId.value);
 
         if (chaptersRes.code === 200 && chaptersRes.data) {
-          const lessons = chaptersRes.data;
+          const lessons = chaptersRes.data.records || [];
           chapters.value = [{
+            chapter_title: "课程",
             resources: lessons.map(lesson => ({
               resource_id: lesson.lesson_id,
               name: lesson.lesson_title,
@@ -796,12 +786,14 @@ export default {
         const videoRes = await studentCourseApi.getLessonsVideo(courseId.value);
 
         if (videoRes.code === 200 && videoRes.data) {
-          const videos = videoRes.data;
-          chaptersVideos.value = [{
-            videos: videos.map(video => ({
-              url: video.video_file_id,
-            }))
-          }]
+          const videos = videoRes.data.records;
+
+          chapters.value.videos = videos.map(video => ({
+            video_url: video.video_file_url,
+          }))
+
+          console.log(videos);
+
         } else {
           ElMessage.error('获取章节数据失败: ' + chaptersRes.message);
           chapters.value = [];

@@ -81,3 +81,18 @@ function getUserUid() {
     const userInfo = localStorage.getItem('userInfo'); // 假设已封装 getStorage
     return JSON.parse(userInfo).uid || ''; // 若未登录，返回空（需上层处理错误）
 }
+
+export function updateAvatar(param) {
+ return request({
+     url: `/users/${getUserUid()}/avatar`,
+     method:'post',
+     data: param,
+     headers: {
+         "Content-Type": "multipart/form-data"
+     }
+ }).then(res => {
+     if (res.code === 200) {
+         return res;
+     }
+ });
+}

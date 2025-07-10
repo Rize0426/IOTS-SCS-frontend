@@ -14,7 +14,6 @@
     <el-tab-pane label="视频学习" name="videos">
       <VideosTab
           :chapters="chapters"
-          :videos="chaptersVideos"
           :loading="loading"
           @play-video="handlePlayVideo"
       />
@@ -61,7 +60,6 @@ import DiscussionsTab from './tabs/DiscussionsTab.vue';
 
 const props = defineProps({
   chapters: Array,
-  chaptersVideos: Array,
   assignments: Array,
   exams: Array,
   discussions: Array,

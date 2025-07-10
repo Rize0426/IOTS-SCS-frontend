@@ -8,14 +8,13 @@
     <div v-else-if="chapters.length === 0 || chapters.every(c => c.videos.length === 0)">
       <el-empty description="暂无视频内容"></el-empty>
     </div>
-    <div v-else v-for="(chapter, index) in chapters" :key="index" class="chapter-block">
       <div class="chapter-title">
-        <el-divider content-position="left">{{ chapter.chapter_title }}</el-divider>
+        <el-divider content-position="left">{{ chapters.chapter_title }}</el-divider>
       </div>
 
       <div class="video-list">
         <div
-            v-for="(video, videoIndex) in chaptersVideos"
+            v-for="(video, videoIndex) in chapters.videos"
             :key="videoIndex"
             class="video-item"
         >
@@ -57,22 +56,17 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { VideoPlay } from '@element-plus/icons-vue';
-import { ElMessage, ElSkeleton, ElEmpty, ElDivider, ElButton, ElProgress } from 'element-plus';
+import { ElMessage, ElSkeleton, ElEmpty } from 'element-plus'; // 引入Element Plus组件
 
 // 定义props
 const props = defineProps({
   chapters: {
-    type: Array,
-    default: () => []
-  },
-  chaptersVideos: {
     type: Array,
     default: () => []
   },
@@ -128,7 +122,7 @@ const formatDate = (dateString) => {
   if (!dateString) return '无日期';
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
+    if (isNaN(date.getTime())) { // 检查日期是否有效
       return '无效日期';
     }
     return date.toLocaleDateString('zh-CN', {
@@ -284,12 +278,12 @@ const videoProgressFormat = (percentage) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: wrap; /* 允许换行 */
+  gap: 10px; /* 元素间距 */
 }
 
 .video-progress {
-  flex-grow: 1;
-  min-width: 150px;
+  flex-grow: 1; /* 进度条占据剩余空间 */
+  min-width: 150px; /* 确保进度条有最小宽度 */
 }
 </style>

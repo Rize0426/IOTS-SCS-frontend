@@ -23,8 +23,7 @@
             <el-icon v-if="resource.type === 'document'"><Document /></el-icon>
             <el-icon v-else-if="resource.type === 'video'"><VideoPlay /></el-icon>
             <el-icon v-else-if="resource.type === 'attachment' || !resource.type"><Paperclip /></el-icon>
-            <el-icon v-else><Files /></el-icon>
-          </div>
+            <el-icon v-else><Files /></el-icon> </div>
 
           <div class="resource-info">
             <div class="resource-name">
@@ -64,7 +63,7 @@
 
 <script setup>
 import { Document, VideoPlay, Paperclip, Files } from '@element-plus/icons-vue';
-import { ElTooltip, ElMessage, ElSkeleton, ElEmpty, ElDivider, ElButton, ElProgress } from 'element-plus'; // 引入Element Plus组件
+import { ElTooltip, ElMessage, ElSkeleton, ElEmpty } from 'element-plus'; // 引入Element Plus组件
 
 const props = defineProps({
   chapters: {
@@ -91,7 +90,7 @@ const formatDate = (dateString) => {
   if (!dateString) return '无日期';
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
+    if (isNaN(date.getTime())) { // 检查日期是否有效
       return '无效日期';
     }
     return date.toLocaleDateString('zh-CN', {
@@ -149,9 +148,9 @@ const videoProgressFormat = (percentage) => {
   padding: 15px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  display: flex; /* Flexbox布局 */
+  align-items: center; /* 垂直居中对齐 */
+  gap: 15px; /* 元素间距 */
 }
 
 .resource-item:hover {
@@ -160,32 +159,32 @@ const videoProgressFormat = (percentage) => {
 }
 
 .resource-icon {
-  font-size: 28px;
-  color: #409eff;
-  flex-shrink: 0;
+  font-size: 28px; /* 增大图标大小 */
+  color: #409eff; /* Element Plus 主色 */
+  flex-shrink: 0; /* 防止图标缩小 */
 }
 
 .resource-info {
   flex-grow: 1;
-  min-width: 0;
+  min-width: 0; /* 允许内容缩小 */
 }
 
 .resource-name {
   font-weight: bold;
   margin-bottom: 5px;
   color: #303133;
-  word-break: break-all;
-  white-space: normal;
+  word-break: break-all; /* 允许长单词换行 */
+  white-space: normal; /* 确保正常换行 */
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis; /* 超出显示省略号 */
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 2; /* 限制两行 */
   -webkit-box-orient: vertical;
 }
 
 .resource-meta {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* 允许换行 */
   gap: 15px;
   color: #909399;
   font-size: 0.85rem;
@@ -196,7 +195,7 @@ const videoProgressFormat = (percentage) => {
   flex-direction: column;
   gap: 10px;
   align-items: flex-end;
-  flex-shrink: 0;
+  flex-shrink: 0; /* 防止按钮缩小 */
 }
 
 .video-progress {
