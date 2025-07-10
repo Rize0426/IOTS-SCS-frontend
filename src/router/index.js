@@ -8,19 +8,13 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
-            path: '/S-home',
-            name: 'S-home',
+            path: '/',
+            name: 'home',
             component: () => import('../views/HomeView.vue'),
             meta: { title: '学生首页', requiresAuth: true } // 需要登录
         },
         {
-            path: '/T-home',
-            name: 'T-home',
-            component: () => import('../views/T-HomeView.vue'),
-            meta: { title: '教师首页', requiresAuth: true } // 需要登录
-        },
-        {
-            path: '/',
+            path: '/login',
             name: 'login',
             component: () => import('@/components/login/LoginView.vue')
         },
@@ -55,30 +49,6 @@ const router = createRouter({
             meta: { title: '成绩分析', requiresAuth: true } // 如果需要登录才能访问
         },
         {
-            path: '/teacher/teacher-resources',
-            name: 'TeacherResourceManager',
-            component: () => import('@/components/teacher/TeacherResourceManager.vue'),
-            meta: { title: '资源管理', requiresAuth: true, role: 'teacher' }
-        },
-        {
-            path: '/teacher/student-grades',
-            name: 'StudentGrades',
-            component: () => import('@/components/teacher/StudentGrades.vue'),
-            meta: { title: '学生成绩', requiresAuth: true }
-        },
-        {
-            path: '/teacher/teacher-discussion',
-            name: 'TeacherDiscussion',
-            component: () => import('@/components/teacher/TeacherDiscussion.vue'),
-            meta: { title: '老师讨论区', requiresAuth: true }
-        },
-        {
-            path: '/teacher/exam-manage',
-            name: 'ExamManage',
-            component: () => import('@/components/teacher/ExamManage.vue'),
-            meta: { title: '考试管理', requiresAuth: true }
-        },
-        {
             path: '/messages',
             name: 'Messages',
             component: () => import('@/components/message/MessageView.vue'),
@@ -110,7 +80,7 @@ router.beforeEach((to, from, next) => {
     const userStore = useUserStore(); // 获取Pinia用户状态
 
     // 场景1：访问登录页 → 直接放行
-    if (to.path === '/') {
+    if (to.path === '/login') {
         next();
         return;
     }
@@ -120,7 +90,7 @@ router.beforeEach((to, from, next) => {
         if (!userStore.isLoggedIn) { // 从Pinia判断状态
             ElMessage.error('请先登录');
             next({
-                path: '/',
+                path: '/login',
                 query: { redirect: to.fullPath } // 记录原目标路径
             });
             return;
