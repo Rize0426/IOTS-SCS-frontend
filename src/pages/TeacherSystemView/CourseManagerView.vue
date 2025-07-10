@@ -241,7 +241,7 @@ const submitting = ref(false)
 // 课程列表
 const courseList = ref([
   {
-    id: 1,
+    id: 123456,
     name: '数据结构与算法',
     description: '深入学习数据结构的基本概念和算法设计',
     cover: '/placeholder.svg?height=200&width=300',

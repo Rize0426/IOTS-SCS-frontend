@@ -3,18 +3,26 @@
     <!-- 标题区域 -->
     <div class="notification-header">
       <h2>重要通知</h2>
+      <!-- 暂时隐藏的三个按钮 -->
+      <!--
       <div class="operation-buttons">
         <el-button type="primary" @click="toggleWriteMode" :class="{ active: writeMode }">写入</el-button>
         <el-button type="warning" @click="toggleEditMode" :class="{ active: editMode }">编辑</el-button>
         <el-button type="danger" @click="toggleDeleteMode" :class="{ active: deleteMode }">删除</el-button>
       </div>
+      -->
     </div>
 
     <!-- 通知列表区域 -->
     <div class="notification-list">
       <el-empty v-if="filteredNotices.length === 0" description="暂无通知"></el-empty>
 
-      <div v-for="(notice, index) in filteredNotices" :key="notice.id" class="notice-item">
+      <div
+          v-for="(notice, index) in filteredNotices"
+          :key="notice.id"
+          class="notice-item"
+          @click="showDetail(notice)"
+      >
         <div class="notice-content">
           <div class="notice-title">{{ notice.title }}</div>
           <div class="notice-time">{{ notice.time }}</div>
@@ -26,18 +34,44 @@
               v-if="editMode"
               type="primary"
               size="small"
-              @click="openEditDialog(notice)"
+              @click.stop="openEditDialog(notice)"
           >编辑</el-button>
 
           <el-button
               v-if="deleteMode"
               type="danger"
               size="small"
-              @click="confirmDelete(notice.id)"
+              @click.stop="confirmDelete(notice.id)"
           >删除</el-button>
         </div>
       </div>
     </div>
+
+    <!-- 通知详情对话框 -->
+    <el-dialog v-model="detailDialogVisible" title="通知详情" width="500px">
+      <template v-if="selectedNotice">
+        <div class="detail-item">
+          <span class="label">标题：</span>
+          <span>{{ selectedNotice.title }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">内容：</span>
+          <span>{{ selectedNotice.content }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">通知人：</span>
+          <span>{{ selectedNotice.notifier }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">通知对象：</span>
+          <span>{{ selectedNotice.target }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">发布时间：</span>
+          <span>{{ selectedNotice.formattedTime }}</span>
+        </div>
+      </template>
+    </el-dialog>
 
     <!-- 通知编辑对话框 -->
     <el-dialog v-model="writeDialogVisible" :title="isEditMode ? '编辑通知' : '编写通知'" width="500px">
@@ -119,6 +153,8 @@ const isEditMode = ref(false)   // 是否为编辑模式
 
 // 控制编辑对话框
 const writeDialogVisible = ref(false)
+// 控制详情对话框
+const detailDialogVisible = ref(false)
 
 // 当前正在编辑的通知（使用reactive确保响应式）
 const editingNotice = reactive({
@@ -129,6 +165,9 @@ const editingNotice = reactive({
   target: '学生',
   date: new Date()
 })
+
+// 当前选中的通知（用于显示详情）
+const selectedNotice = ref(null)
 
 // 表单验证规则
 const formRules = {
@@ -281,6 +320,12 @@ const confirmDelete = (id) => {
     ElMessage.info('已取消删除')
   })
 }
+
+// 显示通知详情
+const showDetail = (notice) => {
+  selectedNotice.value = notice
+  detailDialogVisible.value = true
+}
 </script>
 
 <style scoped>
@@ -337,6 +382,12 @@ const confirmDelete = (id) => {
   border-radius: 6px;
   border-left: 4px solid #409EFF;
   width: 100%;
+  cursor: pointer; /* 添加鼠标指针样式，表明可点击 */
+  transition: background-color 0.2s; /* 添加过渡效果 */
+}
+
+.notice-item:hover {
+  background-color: #f0f0f0; /* 鼠标悬停时的背景色 */
 }
 
 .notice-content {
@@ -364,5 +415,16 @@ const confirmDelete = (id) => {
 /* 自定义空状态样式 */
 :deep(.el-empty) {
   margin: 20px 0;
+}
+
+/* 详情对话框样式 */
+.detail-item {
+  margin-bottom: 10px;
+}
+
+.label {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #666;
 }
 </style>

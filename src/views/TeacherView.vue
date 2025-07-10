@@ -88,11 +88,13 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 // 用户信息
 const userInfo = ref({
-  name: '张老师',
-  avatar: '/src/assets/images/个人信息头像.png'
+    id:userStore.userInfo.uid,
+    name:userStore.userInfo.account,
+    avatar:userStore.userInfo.avatar_url,
 })
 
 // 当前激活的菜单项

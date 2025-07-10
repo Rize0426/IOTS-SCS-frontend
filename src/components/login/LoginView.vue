@@ -43,7 +43,6 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/auth.js'
 import { useUserStore } from '@/stores/auth.js'
-
 export default {
   setup () {
     const router = useRouter()
@@ -84,7 +83,7 @@ export default {
 
             console.log("本地缓存：\n" + JSON.stringify(userStore.userInfo));
             // 跳转到目标路由或首页
-            const redirectPath = route.query.redirect || '/'
+            const redirectPath = userStore.userInfo.role==="student"?'/S-home':'/teacher/dashboard'
             router.push(redirectPath)
           } else {
             ElMessage.error(res.message || '登录失败，请检查账号密码')

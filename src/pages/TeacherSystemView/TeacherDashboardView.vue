@@ -120,13 +120,15 @@ import {
   Refresh,
   Clock
 } from '@element-plus/icons-vue'
-
+import { useUserStore } from '@/stores/auth'
 const router = useRouter()
+const userStore = useUserStore()
 
 // 教师信息
 const teacherInfo = ref({
-  name: '张老师',
-  avatar: '/src/assets/images/个人信息头像.png'
+    id:userStore.userInfo.uid,
+    name:userStore.userInfo.account,
+    avatar:userStore.userInfo.avatar_url,
 })
 
 // 当前日期
