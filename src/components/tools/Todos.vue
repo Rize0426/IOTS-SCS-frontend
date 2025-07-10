@@ -91,10 +91,10 @@ export default {
     async fetchTodos() {
       try {
         this.loading = true
-        /*// 真实接口：axios.get('/api/student/todos')
+        // 真实接口：axios.get('/api/student/todos')
         await new Promise(resolve => setTimeout(resolve, 800))
-        this.todos = this.apiTodos // 赋值模拟数据*/
-        const response = await customFetch('/api/assignments/todo')
+        this.todos = this.apiTodos // 赋值模拟数据
+        /*const response = await customFetch('/api/assignments/todo')
         const data = await response.json()
         if (data.data) {
           this.todos = data.data.map((item) => {
@@ -123,7 +123,7 @@ export default {
             }
             return res
           })]
-        }
+        }*/
       } catch (error) {
         console.error('获取待办失败:', error)
         this.$message.error('获取待办事项失败')
