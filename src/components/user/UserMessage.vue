@@ -285,13 +285,16 @@ export default {
         alert('两次输入的新密码不一致')
         return
       }
+      if (this.newPassword === "" || this.confirmPassword === "" || this.oldPassword === "") {
+        alert("密码不可为空");
+        return
+      }
       const updateFields = {
         oldPassword: this.oldPassword,
         newPassword: this.newPassword
       }
 
       try {
-        console.log(updateFields);
         const res = await updatePassword(updateFields);
         if (res.code === 200) {
           alert('密码修改成功')

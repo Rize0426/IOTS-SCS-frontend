@@ -1,11 +1,16 @@
-<!-- components/course/tabs/ResourcesTab.vue -->
 <template>
   <div class="resources-section">
     <div class="section-title">课程资源</div>
 
-    <div v-for="(chapter, index) in chapters" :key="index" class="chapter-block">
+    <div v-if="loading">
+      <el-skeleton :rows="5" animated />
+    </div>
+    <div v-else-if="chapters.length === 0 || chapters.every(c => c.resources.length === 0)">
+      <el-empty description="暂无资源内容"></el-empty>
+    </div>
+    <div v-else v-for="(chapter, index) in chapters" :key="index" class="chapter-block">
       <div class="chapter-title">
-        <el-divider>第{{ chapter.chapter_number }}章：{{ chapter.chapter_name }}</el-divider>
+        <el-divider content-position="left">{{ chapter.chapter_title }}</el-divider>
       </div>
 
       <div class="resource-list">
@@ -17,7 +22,8 @@
           <div class="resource-icon">
             <el-icon v-if="resource.type === 'document'"><Document /></el-icon>
             <el-icon v-else-if="resource.type === 'video'"><VideoPlay /></el-icon>
-            <el-icon v-else-if="resource.type === 'attachment'"><Paperclip /></el-icon>
+            <el-icon v-else-if="resource.type === 'attachment' || !resource.type"><Paperclip /></el-icon>
+            <el-icon v-else><Files /></el-icon>
           </div>
 
           <div class="resource-info">
@@ -37,12 +43,13 @@
                 size="small"
                 :type="resource.type === 'video' ? 'primary' : 'success'"
                 @click="$emit('download-resource', resource)"
+                :disabled="!resource.allow_download && resource.type !== 'video'"
             >
               {{ resource.type === 'video' ? '预览' : '下载' }}
             </el-button>
 
             <el-progress
-                v-if="resource.type === 'video' && resource.view_progress"
+                v-if="resource.type === 'video' && resource.view_progress !== undefined"
                 :percentage="resource.view_progress"
                 :stroke-width="4"
                 :format="videoProgressFormat"
@@ -56,17 +63,24 @@
 </template>
 
 <script setup>
-import { Document, VideoPlay, Paperclip } from '@element-plus/icons-vue';
+import { Document, VideoPlay, Paperclip, Files } from '@element-plus/icons-vue';
+import { ElTooltip, ElMessage, ElSkeleton, ElEmpty, ElDivider, ElButton, ElProgress } from 'element-plus'; // 引入Element Plus组件
 
 const props = defineProps({
-  chapters: Array,
-  loading: Boolean
+  chapters: {
+    type: Array,
+    default: () => []
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
 });
 
 defineEmits(['download-resource']);
 
 const formatFileSize = (bytes) => {
-  if (!bytes) return '0 B';
+  if (typeof bytes !== 'number' || isNaN(bytes) || bytes < 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -75,12 +89,20 @@ const formatFileSize = (bytes) => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '无日期';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return '无效日期';
+    }
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  } catch (e) {
+    console.error("日期格式化错误:", e);
+    return '无效日期';
+  }
 };
 
 const videoProgressFormat = (percentage) => {
@@ -127,6 +149,9 @@ const videoProgressFormat = (percentage) => {
   padding: 15px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .resource-item:hover {
@@ -135,14 +160,14 @@ const videoProgressFormat = (percentage) => {
 }
 
 .resource-icon {
-  font-size: 24px;
-  margin-right: 10px;
-  display: flex;
-  align-items: center;
+  font-size: 28px;
+  color: #409eff;
+  flex-shrink: 0;
 }
 
 .resource-info {
   flex-grow: 1;
+  min-width: 0;
 }
 
 .resource-name {
@@ -150,10 +175,17 @@ const videoProgressFormat = (percentage) => {
   margin-bottom: 5px;
   color: #303133;
   word-break: break-all;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .resource-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   color: #909399;
   font-size: 0.85rem;
@@ -164,6 +196,7 @@ const videoProgressFormat = (percentage) => {
   flex-direction: column;
   gap: 10px;
   align-items: flex-end;
+  flex-shrink: 0;
 }
 
 .video-progress {

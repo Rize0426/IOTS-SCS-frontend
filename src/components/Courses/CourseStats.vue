@@ -82,6 +82,7 @@ const formatDate = (dateString) => {
     day: '2-digit'
   });
 };
+
 </script>
 
 <style scoped>

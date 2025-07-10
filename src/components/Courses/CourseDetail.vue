@@ -8,8 +8,7 @@
         :endDate="courseDetail.end_date"
         :totalLessons="courseDetail.total_lessons"
         :credit="courseDetail.credit"
-        :totalCourseLessons="courseDetail.total_lessons"
-        :completedLessons="totalLessonsCompleted"
+        :progress="courseProgress"
     />
 
     <div class="course-main-content">
@@ -17,6 +16,7 @@
         <el-col :xs="24" :sm="24" :md="16" :lg="17" class="main-content-left">
           <CourseTabs
               :chapters="chapters"
+              :videos="chaptersVideos"
               :assignments="assignments"
               :exams="exams"
               :discussions="discussions"
@@ -228,6 +228,8 @@ export default {
     // 章节数据（包含资源和视频）
     const chapters = ref([]);
 
+    const chaptersVideos = ref([]);
+
     // 作业列表
     const assignments = ref([]);
 
@@ -291,7 +293,7 @@ export default {
       ).length;
     });
 
-    // 计算课程进度
+    // 课程进度
     const courseProgress = ref(0); // 从API获取
 
     // 进度条颜色
@@ -735,12 +737,11 @@ export default {
 
         // 加载进度信息
         const progressRes = await studentCourseApi.getCoursesProgress(courseId.value);
-        console.log(progressRes.data);
-
-
         if (progressRes.code === 200 && progressRes.data) {
-          totalLessonsCompleted.value = progressRes.data.completed_lessons;
-          courseProgress.value = progressRes.data.progress;
+          console.log(progressRes.data[0]);
+          totalLessonsCompleted.value = progressRes.data[0].completed_lessons;
+          courseProgress.value = progressRes.data[0].progress;
+
         } else {
           ElMessage.warning('获取课程进度失败: ' + progressRes.msg);
           totalLessonsCompleted.value = 0;
@@ -763,33 +764,51 @@ export default {
       }
     };
 
-    // 加载章节数据
     const loadChapters = async () => {
       try {
-        // 使用真实API获取章节数据
-        const chaptersRes = await studentCourseApi.getLessons(courseId.value);
+        // 获取课程课时（lessons）数据
+        const chaptersRes = await studentCourseApi.getLessonsRes(courseId.value);
 
         if (chaptersRes.code === 200 && chaptersRes.data) {
-          // 将扁平的 lessons 转换为 chapters 结构
+          const lessons = chaptersRes.data;
           chapters.value = [{
-            chapter_title: chaptersRes.data.lesson_name,
-            resources: chaptersData.data.map(lesson => ({
+            resources: lessons.map(lesson => ({
               resource_id: lesson.lesson_id,
               name: lesson.lesson_title,
-              type: lesson.lesson_type,
-              is_completed: lesson.is_completed,
-              // 其他属性根据实际lesson数据补充
-              url: lesson.lesson_type === 'video' ? `/videos/${lesson.lesson_id}` : '', // 示例URL
-              view_progress: lesson.is_completed ? 100 : 0 // 假设is_completed表示100%
+              type: lesson.resource_type,
+              fileId: lesson.file_id,
+              allow: lesson.allow_download
             }))
           }];
         } else {
-          ElMessage.error('获取章节数据失败: ' + chaptersData.message);
+          ElMessage.error('获取章节数据失败: ' + chaptersRes.message);
           chapters.value = [];
         }
       } catch (error) {
         console.error('获取章节数据失败:', error);
-        chapters.value = []; // 确保章节数据为空数组而不是undefined
+        chapters.value = [];
+      }
+    };
+
+    const loadChaptersVideo = async () => {
+      try {
+        // 获取课程课时（lessons）数据
+        const videoRes = await studentCourseApi.getLessonsVideo(courseId.value);
+
+        if (videoRes.code === 200 && videoRes.data) {
+          const videos = videoRes.data;
+          chaptersVideos.value = [{
+            videos: videos.map(video => ({
+              url: video.video_file_id,
+            }))
+          }]
+        } else {
+          ElMessage.error('获取章节数据失败: ' + chaptersRes.message);
+          chapters.value = [];
+        }
+      } catch (error) {
+        console.error('获取章节数据失败:', error);
+        chapters.value = [];
       }
     };
 
@@ -849,18 +868,22 @@ export default {
     watch(courseId, (newCourseId) => {
       if (newCourseId) {
         loadCourseDetail();
+        loadChapters();
       }
     });
 
     // 组件挂载时加载数据
     onMounted(() => {
       loadCourseDetail();
+      loadChapters();
+      loadChaptersVideo();
     });
 
     return {
       // 数据
       courseDetail,
       chapters,
+      chaptersVideos,
       assignments,
       exams,
       discussions,
