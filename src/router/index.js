@@ -17,7 +17,7 @@ const router = createRouter({
             path: '/',
             name: 'home',
             component: () => import('../views/HomeView.vue'),
-            meta: { requiresAuth: true } // 需要登录
+            meta: { requiresAuth: true, role: "student" }
         },
         {
             path: '/login',
@@ -46,19 +46,19 @@ const router = createRouter({
             path: '/note',
             name: 'note',
             component: () => import('@/components/note/note.vue'),
-            meta: { requiresAuth: true } // 如果需要登录才能访问
+            meta: { requiresAuth: true}
         },
         {
             path: '/evaluation',
             name: 'evaluation',
             component: () => import('@/pages/StudyCenterView/LearnCenterView.vue'),
-            meta: { requiresAuth: true } // 如果需要登录才能访问
+            meta: { requiresAuth: true, role: "student" }
         },
         {
             path: '/assignment/detail/:id',
             name: 'assignmentDetail',
             component: () => import('@/pages/AssignmentSystemView/student/main/AssignmentDetailView.vue'),
-            meta: { requiresAuth: true }
+            meta: { requiresAuth: true, role: "student" }
         },
         {
             path: '/exam',
@@ -68,11 +68,13 @@ const router = createRouter({
                     path: '/exam/result/:paperId',
                     name: 'ExamResult',
                     component: ExamResultView,
+                    meta: { requiresAuth: true, role: "student" }
                 },
                 {
                     path: '/exam/paper/:paperId',
                     name: 'ExamPaper',
                     component: ExamView,
+                    meta: { requiresAuth: true, role: "student" }
                 }
             ],
             meta: { requiresAuth: true }
@@ -223,9 +225,13 @@ router.beforeEach((to, from, next) => {
         return;
     }
     // 场景3：检查角色权限
-    if (to.meta.role && to.meta.role !== userStore.userRole) {
-        ElMessage.error("权限不足，无法访问该页面")
-        next("/") // 重定向到首页
+    if (to.meta.role && to.meta.role !== userStore.userInfo.role) {
+        //ElMessage.error("权限不足，无法访问该页面")
+        if(userStore.userInfo.role === "student"){
+            next("/") // 重定向到首页
+        }else if(userStore.userInfo.role === "teacher"){
+            next("/teacher/dashboard") // 重定向到首页
+        }
         return
     }
     // 场景3：其他页面 → 直接放行

@@ -26,7 +26,7 @@ export const mockLearnAnalysisData: LearnAnalysisVO = {
     email: 'zhangsan@csu.edu.cn',
     phone: '13800138000',
     name: '张三',
-    avatorUrl: ''
+    avatarUrl: ''
   },
   courseLearnResults: [
     {

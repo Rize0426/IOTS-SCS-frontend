@@ -28,7 +28,7 @@
           @download-attachments="handleDownloadAttachments"
       />-->
       <!--TODO 更改课程id-->
-      <AssignmentListView :course-id="123456" />
+      <AssignmentListView :course-id="/*123456*/courseId" />
     </el-tab-pane>
 
     <el-tab-pane label="考试" name="exams">
@@ -40,7 +40,7 @@
           @view-result="handleViewResult"
       />-->
       <!--TODO 更改课程id-->
-      <ExamListView :course-id="123456" />
+      <ExamListView :course-id="/*123456*/courseId" />
     </el-tab-pane>
 
     <el-tab-pane label="讨论区" name="discussions">

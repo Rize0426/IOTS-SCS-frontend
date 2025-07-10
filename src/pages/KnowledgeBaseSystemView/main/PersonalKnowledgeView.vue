@@ -200,14 +200,17 @@ const loading = ref(false)
 const hasMore = ref(true)
 const page = ref(1)
 
-// 当前用户信息（模拟数据，实际应该从用户状态或API获取）
+// 当前用户信息
 const currentUser = computed(() => {
-  if (knowledgeList.value.length === 0) {
+  if (knowledgeList.value.length === 0&&isMyKnowledge.value) {
     return {
       id: auth.userInfo?.uid,
       name: auth.userInfo?.account,
-      avatar: auth.userInfo?.avatar
+      avatar: auth.userInfo?.avatar_url
     }
+  }
+  if(knowledgeList.value[0].creator.avatar==null){
+    knowledgeList.value[0].creator.avatar = auth.userInfo?.avatar_url
   }
   return knowledgeList.value[0].creator
 })
@@ -215,7 +218,7 @@ const currentUser = computed(() => {
 const fetchknowledgeBases = async () => {
   try {
     loading.value = true
-    const res = await customFetch(`/api/knowledge?page=${page.value}&size=10&sort=0&createUid=${isMyKnowledge.value ? /*auth.userInfo?.uid*/123456 : currentAuthorId.value}&status=${myKnowledgeFilter.value === 'all' ? '' : myKnowledgeFilter.value}`)
+    const res = await customFetch(`/api/knowledge?page=${page.value}&size=10&sort=0&createUid=${isMyKnowledge.value ? auth.userInfo?.uid/*123456*/ : currentAuthorId.value}&status=${myKnowledgeFilter.value === 'all' ? '' : myKnowledgeFilter.value}`)
     const data = await res.json()
     if (!data || data.code !== 200) {
       ElMessage.error('加载知识库失败')

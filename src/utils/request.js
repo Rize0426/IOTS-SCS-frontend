@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/auth.js'; // 引入Pinia用户状态
 import { getStorage } from '@/utils/localStorage.js';
 
 const service = axios.create({
-    baseURL: 'http://localhost:8090', // 后端地址（后续替换）
+    baseURL: '/api', // 后端地址（后续替换）
     timeout: 10000,
     withCredentials: true
 });

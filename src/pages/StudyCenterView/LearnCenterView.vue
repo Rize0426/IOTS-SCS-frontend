@@ -12,7 +12,7 @@
             <!-- StudentProfile -->
             <el-card class="student-profile">
               <div class="profile-header">
-                <el-avatar :size="80" :src="learningData.user.avatorUrl" />
+                <el-avatar :size="80" :src="learningData.user.avatarUrl" />
                 <div class="profile-info">
                   <h2>{{ learningData.user.name }}</h2>
                   <p class="student-id">学号: {{ learningData.user.identity }}</p>
@@ -191,6 +191,7 @@ import router from '../../router';
 import parseMarkdown from '../../utils/markdownParse';
 import LearnPathView from './LearnPathView.vue';
 import SmartRecommendView from './SmartRecommendView.vue';
+import { useUserStore } from '@/stores/auth';
 use([
   CanvasRenderer,
   PieChart,
@@ -201,7 +202,7 @@ use([
   GridComponent,
   BarChart
 ]);
-
+const userStore = useUserStore();
 const loading = ref(false);
 const aiLoading = ref(false);
 const pathLoading = ref(false)
@@ -330,6 +331,9 @@ const fetchData = async () => {
       return;
     }
     learningData.user = data.data.user;
+    if(learningData.user.avatarUrl===null){
+      learningData.user.avatarUrl=userStore.userInfo.avatar_url
+    }
     const clr = data.data.courseLearnResults;
     if (clr.length < learningData.courseLearnResults.length) {
       learningData.courseLearnResults.splice(0, clr.length);

@@ -13,7 +13,7 @@
         <div class="todo-content">
           <!-- 类型标签（作业/考试） -->
           <el-tag size="small" :type="todo.type === 'homework' ? 'primary' : 'danger'">
-            {{ todo.type === 'homework' ? '作业' : '考试' }}
+            {{ todo.type === 'assignment' ? '作业' : '考试' }}
           </el-tag>
 
           <!-- 可跳转的标题（关键修改点） -->
@@ -44,7 +44,7 @@ export default {
     return {
       loading: true,
       todos: [], // 原始待办数据
-      apiTodos: [ // 模拟接口数据（含类型、状态和课程ID）
+      /*apiTodos: [ // 模拟接口数据（含类型、状态和课程ID）
         {
           id: 1,
           title: '前端作业（HTML+CSS）',
@@ -69,7 +69,7 @@ export default {
           deadline: '2024-07-20 23:59',
           courseId: 103 // 假设课程102的路由是/course/103
         }
-      ]
+      ]*/
     }
   },
   computed: {
@@ -92,9 +92,9 @@ export default {
       try {
         this.loading = true
         // 真实接口：axios.get('/api/student/todos')
-        await new Promise(resolve => setTimeout(resolve, 800))
-        this.todos = this.apiTodos // 赋值模拟数据
-        /*const response = await customFetch('/api/assignments/todo')
+        /*await new Promise(resolve => setTimeout(resolve, 800))
+        this.todos = this.apiTodos // 赋值模拟数据*/
+        const response = await customFetch('/api/assignments/todo')
         const data = await response.json()
         if (data.data) {
           this.todos = data.data.map((item) => {
@@ -123,7 +123,7 @@ export default {
             }
             return res
           })]
-        }*/
+        }
       } catch (error) {
         console.error('获取待办失败:', error)
         this.$message.error('获取待办事项失败')

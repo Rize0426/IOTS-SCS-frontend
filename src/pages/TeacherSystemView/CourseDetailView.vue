@@ -82,11 +82,11 @@
                 </div>
             </el-card>
             <!--TODO 传入课程ID-->
-            <TeacherAssignmentsView v-if="activeIndex==='3'" :course-id="/*Number(courseId)*/123456" />
+            <TeacherAssignmentsView v-if="activeIndex==='3'" :course-id="Number(courseId)/*123456*/" />
             <!--TODO 传入课程ID-->
-            <TeacherExamListView v-if="activeIndex==='4'" :course-id="/*Number(courseId)*/123456" />
+            <TeacherExamListView v-if="activeIndex==='4'" :course-id="Number(courseId)/*123456*/" />
             
-            <StudentManagerView v-if="activeIndex==='2'" :course-id="/*Number(courseId)*/123456" />
+            <StudentManagerView v-if="activeIndex==='2'" :course-id="Number(courseId)/*123456*/" />
    
         </el-main>
 

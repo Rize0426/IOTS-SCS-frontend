@@ -5,7 +5,7 @@ export interface UserVO {
   email: string;
   phone: string;
   name: string;
-  avatorUrl: string;
+  avatarUrl: string;
 }
 
 // 作业分析接口
