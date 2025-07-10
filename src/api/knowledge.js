@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { uploadFile } from './upload';
+import { uploadFile } from './file.js';
 
 /**
  * 搜索知识库

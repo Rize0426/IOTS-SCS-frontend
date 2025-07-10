@@ -70,6 +70,18 @@ export const studentCourseApi = {
     },
 
     /**
+     * 获取课程进度
+     * @param {string} courseId - 课程ID
+     * @returns {Promise} - 课程进度
+     */
+    getCoursesProgress(courseId) {
+        return request({
+            url: `/api/courses/${courseId}/progress`,
+            method: `get`
+        });
+    },
+
+    /**
      * 获取课程全部课时
      * @param {string} courseId - 课程ID
      * @returns {Promise} - 课时列表

@@ -53,9 +53,11 @@ const functionList = [
 
 // 点击事件（后续可对接路由或API）
 const handleMenuClick = (btn) => {
-  console.log('点击了：', btn.label)
-  // 实际使用时替换为路由跳转或API调用
-  router.push(btn.path);
+  const currentPath = router.currentRoute.value.path;
+  if(btn.path !== currentPath) {
+    router.push(btn.path);
+  }
+  console.log('点击了：', btn.label);
 }
 </script>
 

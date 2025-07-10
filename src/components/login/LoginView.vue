@@ -38,132 +38,74 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { login } from '@/api/auth.js';
-import { useUserStore } from '@/stores/auth.js';
+import { ref, reactive } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { login } from '@/api/auth.js'
+import { useUserStore } from '@/stores/auth.js'
 
 export default {
-  setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const userStore = useUserStore();
-    const loginFormRef = ref(null); // 表单引用
-    const loading = ref(false);
-    const isTestMode = ref(true); // 测试模式开关
+  setup () {
+    const router = useRouter()
+    const route = useRoute()
+    const userStore = useUserStore()
+    const loginFormRef = ref(null)
+    const loading = ref(false)
 
     // 登录表单数据
     const loginForm = reactive({
+      way: '',        // 登录方式，按后端需要保留
+      role: 1,        // 1 = 学生，可根据业务调整
       username: '',
       password: ''
-    });
+    })
 
-    // 表单验证规则
+    // 表单校验规则
     const loginRules = {
       username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
       password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
-    };
+    }
 
-    // 测试模式下自动填充表单并验证（关键修复）
-    const autoFillTestAccount = () => {
-      if (isTestMode.value) {
-        loginForm.username = 'test_student'; // 模拟学号
-        loginForm.password = '123456';       // 模拟密码
+    // 登录方法
+    const handleLogin = () => {
+      loginFormRef.value.validate(async valid => {
+        if (!valid) return
 
-        // 手动触发表单验证（确保输入框显示填充的值）
-        loginFormRef.value?.validateField(['username', 'password'], valid => {
-          if (valid) {
-            // 验证通过后自动触发登录（可选）
-            // handleLogin();
-          }
-        });
-      }
-    };
-
-    // 登录方法（优化测试模式逻辑）
-    const handleLogin = async () => {
-      // 测试模式下：如果未填充，自动填充并验证
-      if (isTestMode.value && (!loginForm.username || !loginForm.password)) {
-        autoFillTestAccount();
-        return; // 阻止重复提交
-      }
-
-      loginFormRef.value.validate(async (valid) => {
-        if (!valid) return;
-
-        loading.value = true;
+        loading.value = true
         try {
-          if (isTestMode.value) {
-            // 模拟符合后端结构的请求体
-            const mockRequest = {
-              way: 'password',
-              role: 1, // 学生角色（根据后端定义调整）
-              username: loginForm.username,
-              password: loginForm.password
-            };
+          const res = await login(loginForm)
 
-            // 模拟后端返回数据（完全匹配接口结构）
-            const mockResponse = {
-              code: 200,
-              message: '登录成功',
-              data: {
-                token: 'mock-token-xxxxx',
-                user_info: {
-                  uid: 'test_uid',
-                  name: loginForm.username,
-                  role: 'student',
-                  avatar_url: 'https://via.placeholder.com/100'
-                }
-              }
-            };
+          if (res.code === 200) {
+            // 写入 Pinia + localStorage
+            console.log("返回数据：\n" + JSON.stringify(res.data.user_info));
 
-            // 存储到Pinia和localStorage
-            userStore.setLogin(mockResponse.data.token, mockResponse.data.user_info);
-            ElMessage.success('登录成功！');
+            userStore.setLogin(res.data.tokens, res.data.user_info)
+            ElMessage.success('登录成功！')
 
-            // 跳转到原目标页面或首页
-            const redirectPath = route.query.redirect || '/'; // 使用useRoute获取的route
-            router.push(redirectPath);
+            console.log("本地缓存：\n" + JSON.stringify(userStore.userInfo));
+            // 跳转到目标路由或首页
+            const redirectPath = route.query.redirect || '/'
+            router.push(redirectPath)
           } else {
-            // 正式模式调用真实API
-            const res = await login(loginForm);
-
-            if (res.code === 200) {
-              // 存储到Pinia和localStorage
-              userStore.setLogin(res.data.token, res.data.user_info);
-              ElMessage.success('登录成功！');
-              const redirectPath = route.query.redirect || '/'; // 使用useRoute获取的route
-              router.push(redirectPath);
-            } else {
-              ElMessage.error(res.message || '登录失败，请检查账号密码');
-            }
+            ElMessage.error(res.message || '登录失败，请检查账号密码')
           }
-        } catch (error) {
-          console.error('登录异常:', error);
-          ElMessage.error('登录异常，请稍后重试');
+        } catch (err) {
+          console.error('登录异常:', err)
         } finally {
-          loading.value = false;
+          loading.value = false
         }
-      });
-    };
+      })
+    }
 
-    // 组件挂载时自动填充测试账号（关键！）
-    onMounted(() => {
-      autoFillTestAccount();
-    });
-
-    // 返回模板需要的变量和方法（移除handleRegister）
     return {
       loginForm,
       loginRules,
       loginFormRef,
       handleLogin,
-      loading,
-      isTestMode
-    };
+      loading
+    }
   }
-};
+}
 </script>
 
 <style scoped>

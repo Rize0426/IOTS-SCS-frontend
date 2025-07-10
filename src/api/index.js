@@ -12,7 +12,7 @@ import * as lab from './lab';
 import * as question from './question';
 import * as evaluation from './evaluation';
 import * as admin from './admin';
-import * as upload from './upload';
+import * as upload from './file.js';
 
 // 导出所有模块
 export default {

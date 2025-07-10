@@ -8,7 +8,7 @@
     <!-- 用户信息 -->
     <div class="info-container">
       <!-- 用户名 -->
-      <div class="username">{{ userInfo.username }}</div>
+      <div class="username">{{ userInfo.username}}</div>
 
       <!-- 用户身份 -->
       <div class="role">{{ userInfo.role }}</div>
@@ -18,16 +18,27 @@
 
 <script setup>
 import defaultAvatar from '@/assets/images/个人信息头像.png';
-// 定义props，接收后端传值
-const props = defineProps({
-  userInfo: {
-    type: Object,
-    required: true,
-    default: () => ({
-      avatar: defaultAvatar,
-      username: '当前用户',                   // 默认用户名
-      role: '学生'                           // 默认用户身份
-    })
+import { computed } from "vue";
+import { useUserStore } from "@/stores/auth.js";
+
+function translateRole(role) {
+  switch (role) {
+    case 'student': return "学生";
+    case 'teacher': return "教师";
+    case 'admin': return "管理员";
+    default: return "未知用户";
+  }
+}
+
+
+const userStore = useUserStore();
+
+const userInfo = computed(() => {
+  const info = userStore.userInfo || {};
+  return {
+    avatar: info.avatar_url || defaultAvatar,
+    username: info.account || "当前用户",
+    role: translateRole(info.role),
   }
 })
 </script>

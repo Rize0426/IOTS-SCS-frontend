@@ -109,28 +109,12 @@ import {
   Document, User, Calendar, Clock, VideoPlay, Paperclip,
   Edit, View, ChatLineRound, Star, Plus, Timer
 } from '@element-plus/icons-vue';
-// 注释掉原有的API导入
-// import {
-//   getCourseDetail,
-//   getLessons,
-//   getAssignments,
-//   getExams,
-//   getCourseDiscussions,
-//   createDiscussion,
-//   getDiscussionDetail,
-//   submitAssignment,
-//   uploadFile,
-//   reserveExam,
-//   startExam,
-//   viewExamResult,
-//   getRecommendedCourses
-// } from '@/api';
 
-// 导入模拟API方法
+// 导入模拟API方法，这里暂时保留用于没有真实API的请求
 import {
   mockApiRequest,
-  getCourseResources,
-  getChapters,
+  // getCourseResources, // 替换为真实API
+  // getChapters, // 替换为真实API
   getAssignments as mockGetAssignments,
   getExams as mockGetExams,
   getDiscussions as mockGetDiscussions,
@@ -151,6 +135,7 @@ import CourseTabs from './CourseTabs.vue';
 import CourseStats from './CourseStats.vue';
 import RecommendedCourses from './RecommendedCourses.vue';
 import VideoPlayerModal from './VideoPlayerModal.vue';
+import {studentCourseApi} from "@/api/course.js";
 
 // 默认占位图
 const defaultVideoThumbnail = 'https://via.placeholder.com/300x180?text=视频缩略图';
@@ -237,41 +222,21 @@ export default {
     const videoPlayerRef = ref(null);
 
     // 统计数据
-    const totalLessonsCompleted = computed(() => {
-      return chapters.value.reduce((total, chapter) => {
-        return total + chapter.resources.filter(res =>
-          res.type === 'video' && res.view_progress && res.view_progress > 0
-        ).length;
-      }, 0);
-    });
-
+    const totalLessonsCompleted = ref(0); // 从API获取
     const totalAssignmentsSubmitted = computed(() => {
       return assignments.value.filter(assignment =>
-        assignment.status === 'submitted' || assignment.status === 'completed'
+          assignment.status === 'submitted' || assignment.status === 'completed'
       ).length;
     });
 
     const totalExamsTaken = computed(() => {
       return exams.value.filter(exam =>
-        ['completed', 'graded'].includes(exam.status)
+          ['completed', 'graded'].includes(exam.status)
       ).length;
     });
 
     // 计算课程进度
-    const courseProgress = computed(() => {
-      if (!courseDetail.value || courseDetail.value.total_lessons === 0) return 0;
-
-      // 计算已完成的课时数量（视频观看进度大于0视为已完成）
-      const completedLessons = chapters.value.reduce((total, chapter) => {
-        return total + chapter.resources.filter(res =>
-          res.type === 'video' && res.view_progress && res.view_progress > 0
-        ).length;
-      }, 0);
-
-      // 计算进度百分比
-      const progress = Math.round((completedLessons / courseDetail.value.total_lessons) * 100);
-      return progress;
-    });
+    const courseProgress = ref(0); // 从API获取
 
     // 进度条颜色
     const progressColor = computed(() => {
@@ -433,7 +398,7 @@ export default {
     const downloadFile = async (fileId) => {
       try {
         // 调用模拟API下载文件
-        const response = await downloadFile(fileId);
+        const response = await downloadFile(fileId); // 这里仍然使用mockApi的downloadFile
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
@@ -482,9 +447,9 @@ export default {
 
         // 调用模拟API提交作业
         await mockSubmitAssignment(
-          courseId.value,
-          submitAssignmentForm.assignment_id,
-          formData
+            courseId.value,
+            submitAssignmentForm.assignment_id,
+            formData
         );
 
         showSubmitAssignmentDialog.value = false;
@@ -694,37 +659,49 @@ export default {
     const loadCourseDetail = async () => {
       try {
         loading.value = true;
-
-        // 使用模拟API获取课程详情
-        const courseResponse = await getCourseResources(courseId.value);
-        if (courseResponse && courseResponse.course_name) {
-          courseDetail.value = courseResponse;
-        } else {
-          // 如果API没有返回数据，使用默认模拟数据
+        // 获取课程详情
+        const detailRes = await studentCourseApi.getCourseDetail(courseId.value);
+        if (detailRes.code === 200 && detailRes.data) {
           courseDetail.value = {
-            course_id: courseId.value,
-            course_name: 'Web前端开发实战教程',
-            status: 'in_progress',
-            teacher_name: '张教授',
-            start_date: '2023-09-01',
-            end_date: '2023-12-31',
-            total_lessons: 20,
-            credit: 4,
-            description: '本课程涵盖HTML、CSS、JavaScript等前端核心技术，通过实战项目帮助学员掌握Web前端开发技能。'
+            course_name: detailRes.data.course_name,
+            status: detailRes.data.status,
+            teacher_name: detailRes.data.teacher_name,
+            start_date: detailRes.data.start_date,
+            end_date: detailRes.data.end_date,
+            total_lessons: detailRes.data.total_lessons,
+            credit: detailRes.data.credit,
+            description: detailRes.data.description,
+            cover_image_url: detailRes.data.cover_image_url
           };
+        } else {
+          ElMessage.error('获取课程详情失败: ' + detailRes.msg);
         }
 
-        // 加载相关数据
-        await Promise.all([
-          loadChapters(),
-          loadAssignments(),
-          loadExams(),
-          loadDiscussions(),
-          loadRecommendedCourses()
-        ]);
+        // 加载进度信息
+        const progressRes = await studentCourseApi.getCoursesProgress(courseId.value);
+        console.log(progressRes.data);
+
+
+        if (progressRes.code === 200 && progressRes.data) {
+          totalLessonsCompleted.value = progressRes.data.completed_lessons;
+          courseProgress.value = progressRes.data.progress;
+        } else {
+          ElMessage.warning('获取课程进度失败: ' + progressRes.msg);
+          totalLessonsCompleted.value = 0;
+          courseProgress.value = 0;
+        }
+
+        // // 加载相关数据
+        // await Promise.all([
+        //   loadChapters(),
+        //   loadAssignments(), // 仍使用mockApi，无对应真实API
+        //   loadExams(), // 仍使用mockApi，无对应真实API
+        //   loadDiscussions(), // 仍使用mockApi，无对应真实API
+        //   loadRecommendedCourses() // 仍使用mockApi，无对应真实API
+        // ]);
       } catch (error) {
-        ElMessage.error('获取课程详情失败');
-        console.error('获取课程详情失败:', error);
+        ElMessage.error('获取课程详情或进度失败');
+        console.error('获取课程详情或进度失败:', error);
       } finally {
         loading.value = false;
       }
@@ -733,25 +710,41 @@ export default {
     // 加载章节数据
     const loadChapters = async () => {
       try {
-        // 使用模拟API获取章节数据
-        const chaptersResponse = await getChapters(courseId.value);
-        chapters.value = chaptersResponse || [];
+        // 使用真实API获取章节数据
+        const chaptersRes = await studentCourseApi.getLessons(courseId.value);
+
+        if (chaptersRes.code === 200 && chaptersRes.data) {
+          // 将扁平的 lessons 转换为 chapters 结构
+          chapters.value = [{
+            chapter_title: chaptersRes.data.lesson_name,
+            resources: chaptersData.data.map(lesson => ({
+              resource_id: lesson.lesson_id,
+              name: lesson.lesson_title,
+              type: lesson.lesson_type,
+              is_completed: lesson.is_completed,
+              // 其他属性根据实际lesson数据补充
+              url: lesson.lesson_type === 'video' ? `/videos/${lesson.lesson_id}` : '', // 示例URL
+              view_progress: lesson.is_completed ? 100 : 0 // 假设is_completed表示100%
+            }))
+          }];
+        } else {
+          ElMessage.error('获取章节数据失败: ' + chaptersData.message);
+          chapters.value = [];
+        }
       } catch (error) {
         console.error('获取章节数据失败:', error);
         chapters.value = []; // 确保章节数据为空数组而不是undefined
       }
     };
 
-    // 加载作业数据
+    // 加载作业数据 (仍使用mockApi，因为没有提供真实API)
     const loadAssignments = async () => {
       try {
-        // 使用模拟API获取作业数据
         const assignmentsResponse = await mockGetAssignments(courseId.value);
         assignments.value = assignmentsResponse || [];
 
-        // 计算已提交的作业数量
         totalAssignmentsSubmitted.value = assignments.value.filter(
-          assignment => assignment.status === 'submitted' || assignment.status === 'completed'
+            assignment => assignment.status === 'submitted' || assignment.status === 'completed'
         ).length;
       } catch (error) {
         console.error('获取作业数据失败:', error);
@@ -759,16 +752,14 @@ export default {
       }
     };
 
-    // 加载考试数据
+    // 加载考试数据 (仍使用mockApi，因为没有提供真实API)
     const loadExams = async () => {
       try {
-        // 使用模拟API获取考试数据
         const examsResponse = await mockGetExams(courseId.value);
         exams.value = examsResponse || [];
 
-        // 计算已参加的考试数量
         totalExamsTaken.value = exams.value.filter(
-          exam => exam.status === 'completed' || exam.status === 'graded'
+            exam => exam.status === 'completed' || exam.status === 'graded'
         ).length;
       } catch (error) {
         console.error('获取考试数据失败:', error);
@@ -776,10 +767,9 @@ export default {
       }
     };
 
-    // 加载讨论数据
+    // 加载讨论数据 (仍使用mockApi，因为没有提供真实API)
     const loadDiscussions = async () => {
       try {
-        // 使用模拟API获取讨论数据
         const discussionsResponse = await mockGetDiscussions(courseId.value);
         discussions.value = discussionsResponse.list || [];
       } catch (error) {
@@ -788,10 +778,9 @@ export default {
       }
     };
 
-    // 加载推荐课程数据
+    // 加载推荐课程数据 (仍使用mockApi，因为没有提供真实API)
     const loadRecommendedCourses = async () => {
       try {
-        // 使用模拟API获取推荐课程数据
         const recommendedCoursesResponse = await mockGetRecommendedCourses(courseId.value);
         recommendedCourses.value = recommendedCoursesResponse || [];
       } catch (error) {
@@ -865,9 +854,6 @@ export default {
       handleViewResult,
       downloadAssignmentAttachments,
       handleViewSubmission,
-
-      // API方法（已替换为模拟API）
-      // 这些方法现在使用模拟API实现，原来的API调用已被注释掉
     };
   }
 };
@@ -911,21 +897,13 @@ export default {
   margin: 10px 0;
 }
 
-.resource-list,
-.video-list,
-.assignment-list,
-.exam-list,
-.discussion-list {
+.resource-list, .video-list, .assignment-list, .exam-list, .discussion-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.resource-item,
-.video-item,
-.assignment-item,
-.exam-item,
-.discussion-item {
+.resource-item, .video-item, .assignment-item, .exam-item, .discussion-item {
   background-color: #fff;
   border-radius: 8px;
   padding: 15px;
@@ -933,11 +911,7 @@ export default {
   transition: all 0.3s ease;
 }
 
-.resource-item:hover,
-.video-item:hover,
-.assignment-item:hover,
-.exam-item:hover,
-.discussion-item:hover {
+.resource-item:hover, .video-item:hover, .assignment-item:hover, .exam-item:hover, .discussion-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
 }
@@ -988,8 +962,7 @@ export default {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 56.25%;
-  /* 16:9 宽高比 */
+  padding-bottom: 56.25%; /* 16:9 宽高比 */
   background-color: #f0f0f0;
   border-radius: 4px;
   overflow: hidden;
@@ -1066,16 +1039,14 @@ export default {
   align-items: center;
 }
 
-.assignment-item,
-.exam-item {
+.assignment-item, .exam-item {
   padding: 15px;
   border: 1px solid #ebeef5;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
-.assignment-item:hover,
-.exam-item:hover {
+.assignment-item:hover, .exam-item:hover {
   border-color: #409EFF;
 }
 
@@ -1111,19 +1082,14 @@ export default {
   gap: 10px;
 }
 
-.resources-section,
-.videos-section,
-.assignments-section,
-.exams-section,
-.discussions-section {
+.resources-section, .videos-section, .assignments-section, .exams-section, .discussions-section {
   background-color: #fff;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-.stats-card,
-.recommendations-card {
+.stats-card, .recommendations-card {
   margin-top: 20px;
   height: 100%;
 }
@@ -1295,8 +1261,7 @@ export default {
     flex-direction: column;
   }
 
-  .main-content-left,
-  .main-content-right {
+  .main-content-left, .main-content-right {
     width: 100%;
   }
 

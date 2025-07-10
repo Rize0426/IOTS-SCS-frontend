@@ -1,6 +1,5 @@
 // src/api/auth.js
 import request from '@/utils/request.js'; // 导入公共请求实例
-import { setStorage, delStorage } from '@/utils/localStorage.js'; // 本地存储工具
 
 /**
  * 用户登录（获取 Token）
@@ -18,10 +17,10 @@ export function login(params) {
         method: 'post',
         data: params // POST 请求体
     }).then(res => {
-        // 登录成功后存储 Token 到本地（响应结构：{ code:200, data: { token: "xxx", user_info: {...} } }）
+        // 登录成功后存储 Token 到本地（响应结构：{ code:200, data: { tokens: "xxx", user_info: {...} } }）
         if (res.code === 200) {
-            setStorage('Token', res.data.token); // 存储 Token
-            setStorage('userInfo', res.data.user_info); // 可选：缓存用户信息（减少重复请求）
+            localStorage.setItem('Token', res.data.tokens); // 存储 Token
+            localStorage.setItem('userInfo', res.data.user_info); // 可选：缓存用户信息（减少重复请求）
         }
         return res;
     });
@@ -51,6 +50,14 @@ export function updateUserInfo(params) {
     });
 }
 
+export function updatePassword(params) {
+    return request({
+        url: `/api/auth/${getUserUid()}`,
+        method: 'put',
+        data: params
+    })
+}
+
 /**
  * 退出登录
  * @returns {Promise} 响应结果
@@ -61,8 +68,8 @@ export function logout() {
         method: 'post'
     }).finally(() => {
         // 无论成功与否，清除本地 Token 和用户信息
-        delStorage('Token');
-        delStorage('userInfo');
+        localStorage.removeItem('Token');
+        localStorage.removeItem('userInfo');
     });
 }
 
@@ -71,6 +78,6 @@ export function logout() {
  * @returns {string} 用户 UID
  */
 function getUserUid() {
-    const userInfo = getStorage('userInfo'); // 假设已封装 getStorage
-    return userInfo?.uid || ''; // 若未登录，返回空（需上层处理错误）
+    const userInfo = localStorage.getItem('userInfo'); // 假设已封装 getStorage
+    return JSON.parse(userInfo).uid || ''; // 若未登录，返回空（需上层处理错误）
 }
