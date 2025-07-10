@@ -42,7 +42,7 @@ const functionList = [
   {
     label: '知识库',
     type: 'info',
-    path: '/knowledge'
+    path: '/knowledge-base'
   },
   {
     label: '我的笔记',

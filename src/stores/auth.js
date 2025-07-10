@@ -6,7 +6,8 @@ export const useUserStore = defineStore('user', {
     state: () => ({
         token: getStorage('token') || '',          // 从 localStorage 初始化
         userInfo: JSON.parse(getStorage('userInfo') || '{}'), // 从 localStorage 初始化
-        isLoggedIn: !!getStorage('token')          // 登录状态
+        isLoggedIn: !!getStorage('token'),          // 登录状态
+        useRole:"teacher"
     }),
     actions: {
         // 登录（存储状态）

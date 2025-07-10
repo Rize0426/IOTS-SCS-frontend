@@ -2,114 +2,62 @@
 <template>
   <div class="course-detail" v-loading="loading">
     <!-- 使用拆分后的组件 -->
-    <CourseHeader
-        :courseName="courseDetail.course_name"
-        :status="courseDetail.status"
-        :teacherName="courseDetail.teacher_name"
-        :startDate="courseDetail.start_date"
-        :endDate="courseDetail.end_date"
-        :totalLessons="courseDetail.total_lessons"
-        :credit="courseDetail.credit"
-        :totalCourseLessons="courseDetail.total_lessons"
-        :completedLessons="totalLessonsCompleted"
-    />
+    <CourseHeader :courseName="courseDetail.course_name" :status="courseDetail.status"
+      :teacherName="courseDetail.teacher_name" :startDate="courseDetail.start_date" :endDate="courseDetail.end_date"
+      :totalLessons="courseDetail.total_lessons" :credit="courseDetail.credit"
+      :totalCourseLessons="courseDetail.total_lessons" :completedLessons="totalLessonsCompleted" />
 
     <div class="course-main-content">
       <el-row :gutter="20">
         <!-- 左侧区域 -->
         <el-col :xs="24" :sm="24" :md="16" :lg="17" class="main-content-left">
-          <CourseTabs
-              :chapters="chapters"
-              :assignments="assignments"
-              :exams="exams"
-              :discussions="discussions"
-              :loading="loading"
-              @download-resource="handleDownloadResource"
-              @preview-video="handlePreviewVideo"
-              @play-video="handlePlayVideo"
-              @submit-assignment="handleSubmitAssignment"
-              @view-submission="handleViewSubmission"
-              @download-attachments="handleDownloadAttachments"
-              @reserve-exam="handleReserveExam"
-              @start-exam="handleStartExam"
-              @view-result="handleViewResult"
-              @view-discussion="handleViewDiscussion"
-              @new-discussion="showNewDiscussionDialog = true"
-          />
+          <CourseTabs :chapters="chapters" :assignments="assignments" :exams="exams" :discussions="discussions"
+            :loading="loading" :course-id="courseId" @download-resource="handleDownloadResource"
+            @preview-video="handlePreviewVideo" @play-video="handlePlayVideo"
+            @submit-assignment="handleSubmitAssignment" @view-submission="handleViewSubmission"
+            @download-attachments="handleDownloadAttachments" @reserve-exam="handleReserveExam"
+            @start-exam="handleStartExam" @view-result="handleViewResult" @view-discussion="handleViewDiscussion"
+            @new-discussion="showNewDiscussionDialog = true" />
         </el-col>
 
         <!-- 右侧区域 -->
         <el-col :xs="24" :sm="24" :md="8" :lg="7" class="main-content-right">
-          <CourseStats
-              :totalLessons="courseDetail.total_lessons"
-              :totalLessonsCompleted="totalLessonsCompleted"
-              :totalAssignments="assignments.length"
-              :totalAssignmentsSubmitted="totalAssignmentsSubmitted"
-              :totalExams="exams.length"
-              :totalExamsTaken="totalExamsTaken"
-              :courseProgress="courseProgress"
-              :recentActivities="recentActivities"
-          />
+          <CourseStats :totalLessons="courseDetail.total_lessons" :totalLessonsCompleted="totalLessonsCompleted"
+            :totalAssignments="assignments.length" :totalAssignmentsSubmitted="totalAssignmentsSubmitted"
+            :totalExams="exams.length" :totalExamsTaken="totalExamsTaken" :courseProgress="courseProgress"
+            :recentActivities="recentActivities" />
 
           <RecommendedCourses :recommendedCourses="recommendedCourses" />
         </el-col>
       </el-row>
 
       <!-- 视频播放弹窗 -->
-      <VideoPlayerModal
-          v-model:visible="showVideoPlayer"
-          :videoUrl="currentVideoUrl"
-          :videoInfo="currentVideoInfo"
-      />
+      <VideoPlayerModal v-model:visible="showVideoPlayer" :videoUrl="currentVideoUrl" :videoInfo="currentVideoInfo" />
     </div>
 
     <!-- 新建讨论对话框 -->
-    <el-dialog
-        v-model="showNewDiscussionDialog"
-        title="发布新话题"
-        width="50%"
-    >
+    <el-dialog v-model="showNewDiscussionDialog" title="发布新话题" width="50%">
       <el-form :model="newDiscussionForm" label-width="80px">
         <el-form-item label="话题标题">
           <el-input v-model="newDiscussionForm.title" placeholder="请输入话题标题"></el-input>
         </el-form-item>
 
         <el-form-item label="话题内容">
-          <el-input
-              v-model="newDiscussionForm.content"
-              type="textarea"
-              :rows="5"
-              placeholder="请输入话题内容"
-          ></el-input>
+          <el-input v-model="newDiscussionForm.content" type="textarea" :rows="5" placeholder="请输入话题内容"></el-input>
         </el-form-item>
 
         <el-form-item label="话题标签">
-          <el-select
-              v-model="newDiscussionForm.tags"
-              multiple
-              filterable
-              placeholder="请选择话题标签"
-              style="width: 100%"
-          >
-            <el-option
-                v-for="tag in discussionTags"
-                :key="tag.value"
-                :label="tag.label"
-                :value="tag.value"
-            ></el-option>
+          <el-select v-model="newDiscussionForm.tags" multiple filterable placeholder="请选择话题标签" style="width: 100%">
+            <el-option v-for="tag in discussionTags" :key="tag.value" :label="tag.label" :value="tag.value"></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="上传附件">
-          <el-upload
-              action="#"
-              :http-request="handleFileUpload"
-              :limit="3"
-              multiple
-              list-type="picture-card"
-          >
+          <el-upload action="#" :http-request="handleFileUpload" :limit="3" multiple list-type="picture-card">
             <template #default="scope">
-              <el-icon><Plus /></el-icon>
+              <el-icon>
+                <Plus />
+              </el-icon>
             </template>
           </el-upload>
         </el-form-item>
@@ -124,33 +72,22 @@
     </el-dialog>
 
     <!-- 作业提交对话框 -->
-    <el-dialog
-        v-model="showSubmitAssignmentDialog"
-        title="提交作业"
-        width="50%"
-    >
+    <el-dialog v-model="showSubmitAssignmentDialog" title="提交作业" width="50%">
       <el-form :model="submitAssignmentForm" label-width="80px">
         <el-form-item label="作业附件">
-          <el-upload
-              action="#"
-              :http-request="handleSubmitAttachmentUpload"
-              :limit="5"
-              multiple
-              list-type="picture-card"
-          >
+          <el-upload action="#" :http-request="handleSubmitAttachmentUpload" :limit="5" multiple
+            list-type="picture-card">
             <template #default="scope">
-              <el-icon><Plus /></el-icon>
+              <el-icon>
+                <Plus />
+              </el-icon>
             </template>
           </el-upload>
         </el-form-item>
 
         <el-form-item label="主观题答案">
-          <el-input
-              v-model="submitAssignmentForm.answer_content"
-              type="textarea"
-              :rows="6"
-              placeholder="请输入主观题答案"
-          ></el-input>
+          <el-input v-model="submitAssignmentForm.answer_content" type="textarea" :rows="6"
+            placeholder="请输入主观题答案"></el-input>
         </el-form-item>
       </el-form>
 
@@ -303,20 +240,20 @@ export default {
     const totalLessonsCompleted = computed(() => {
       return chapters.value.reduce((total, chapter) => {
         return total + chapter.resources.filter(res =>
-            res.type === 'video' && res.view_progress && res.view_progress > 0
+          res.type === 'video' && res.view_progress && res.view_progress > 0
         ).length;
       }, 0);
     });
 
     const totalAssignmentsSubmitted = computed(() => {
       return assignments.value.filter(assignment =>
-          assignment.status === 'submitted' || assignment.status === 'completed'
+        assignment.status === 'submitted' || assignment.status === 'completed'
       ).length;
     });
 
     const totalExamsTaken = computed(() => {
       return exams.value.filter(exam =>
-          ['completed', 'graded'].includes(exam.status)
+        ['completed', 'graded'].includes(exam.status)
       ).length;
     });
 
@@ -327,7 +264,7 @@ export default {
       // 计算已完成的课时数量（视频观看进度大于0视为已完成）
       const completedLessons = chapters.value.reduce((total, chapter) => {
         return total + chapter.resources.filter(res =>
-            res.type === 'video' && res.view_progress && res.view_progress > 0
+          res.type === 'video' && res.view_progress && res.view_progress > 0
         ).length;
       }, 0);
 
@@ -545,9 +482,9 @@ export default {
 
         // 调用模拟API提交作业
         await mockSubmitAssignment(
-            courseId.value,
-            submitAssignmentForm.assignment_id,
-            formData
+          courseId.value,
+          submitAssignmentForm.assignment_id,
+          formData
         );
 
         showSubmitAssignmentDialog.value = false;
@@ -814,7 +751,7 @@ export default {
 
         // 计算已提交的作业数量
         totalAssignmentsSubmitted.value = assignments.value.filter(
-            assignment => assignment.status === 'submitted' || assignment.status === 'completed'
+          assignment => assignment.status === 'submitted' || assignment.status === 'completed'
         ).length;
       } catch (error) {
         console.error('获取作业数据失败:', error);
@@ -831,7 +768,7 @@ export default {
 
         // 计算已参加的考试数量
         totalExamsTaken.value = exams.value.filter(
-            exam => exam.status === 'completed' || exam.status === 'graded'
+          exam => exam.status === 'completed' || exam.status === 'graded'
         ).length;
       } catch (error) {
         console.error('获取考试数据失败:', error);
@@ -895,7 +832,7 @@ export default {
       currentVideoUrl,
       currentVideoInfo,
       videoPlayerRef,
-
+      courseId,
       // 计算属性
       courseProgress,
       progressColor,
@@ -974,13 +911,21 @@ export default {
   margin: 10px 0;
 }
 
-.resource-list, .video-list, .assignment-list, .exam-list, .discussion-list {
+.resource-list,
+.video-list,
+.assignment-list,
+.exam-list,
+.discussion-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.resource-item, .video-item, .assignment-item, .exam-item, .discussion-item {
+.resource-item,
+.video-item,
+.assignment-item,
+.exam-item,
+.discussion-item {
   background-color: #fff;
   border-radius: 8px;
   padding: 15px;
@@ -988,7 +933,11 @@ export default {
   transition: all 0.3s ease;
 }
 
-.resource-item:hover, .video-item:hover, .assignment-item:hover, .exam-item:hover, .discussion-item:hover {
+.resource-item:hover,
+.video-item:hover,
+.assignment-item:hover,
+.exam-item:hover,
+.discussion-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
 }
@@ -1039,7 +988,8 @@ export default {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 56.25%; /* 16:9 宽高比 */
+  padding-bottom: 56.25%;
+  /* 16:9 宽高比 */
   background-color: #f0f0f0;
   border-radius: 4px;
   overflow: hidden;
@@ -1116,14 +1066,16 @@ export default {
   align-items: center;
 }
 
-.assignment-item, .exam-item {
+.assignment-item,
+.exam-item {
   padding: 15px;
   border: 1px solid #ebeef5;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
-.assignment-item:hover, .exam-item:hover {
+.assignment-item:hover,
+.exam-item:hover {
   border-color: #409EFF;
 }
 
@@ -1159,14 +1111,19 @@ export default {
   gap: 10px;
 }
 
-.resources-section, .videos-section, .assignments-section, .exams-section, .discussions-section {
+.resources-section,
+.videos-section,
+.assignments-section,
+.exams-section,
+.discussions-section {
   background-color: #fff;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-.stats-card, .recommendations-card {
+.stats-card,
+.recommendations-card {
   margin-top: 20px;
   height: 100%;
 }
@@ -1338,7 +1295,8 @@ export default {
     flex-direction: column;
   }
 
-  .main-content-left, .main-content-right {
+  .main-content-left,
+  .main-content-right {
     width: 100%;
   }
 

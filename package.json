@@ -9,16 +9,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dompurify": "^3.0.6",
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.10.0",
     "default-passive-events": "^4.0.0",
     "echarts": "^5.6.0",
     "element-plus": "^2.10.3",
     "pinia": "^3.0.3",
+    "highlight.js": "^11.9.0",
+    "jsdom": "^26.1.0",
+    "katex": "^0.16.8",
+    "markdown-it": "^14.1.0",
+    "marked": "^4.2.4",
     "unplugin-auto-import": "^19.3.0",
     "unplugin-vue-components": "^28.8.0",
     "vue": "^3.5.17",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vue-echarts": "^7.0.3",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.10",

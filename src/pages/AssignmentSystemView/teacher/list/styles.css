@@ -1,0 +1,569 @@
+/* 教师作业列表页面样式 */
+.teacher-my-assignments-container {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 使用命名空间限定背景装饰样式，避免与其他页面冲突 */
+.teacher-my-assignments-container .background-decoration {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.teacher-my-assignments-container .decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    animation: teacher-assignments-float 6s ease-in-out infinite;
+}
+
+.teacher-my-assignments-container .circle-1 {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.teacher-my-assignments-container .circle-2 {
+    width: 150px;
+    height: 150px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 2s;
+}
+
+.teacher-my-assignments-container .circle-3 {
+    width: 100px;
+    height: 100px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 4s;
+}
+
+/* 重命名动画关键帧以避免冲突 */
+@keyframes teacher-assignments-float {
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
+}
+
+.teacher-my-assignments-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 页面头部 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.header-info {
+    flex: 1;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #303133;
+    margin-bottom: 0.5rem;
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: #606266;
+    margin: 0;
+}
+
+.header-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border: 2px solid;
+    min-width: 80px;
+}
+
+.stat-card.active {
+    background: rgba(103, 194, 58, 0.1);
+    border-color: rgba(103, 194, 58, 0.3);
+}
+
+.stat-card.completed {
+    background: rgba(144, 147, 153, 0.1);
+    border-color: rgba(144, 147, 153, 0.3);
+}
+
+.stat-card.draft {
+    background: rgba(230, 162, 60, 0.1);
+    border-color: rgba(230, 162, 60, 0.3);
+}
+
+.stat-card.total {
+    background: rgba(64, 158, 255, 0.1);
+    border-color: rgba(64, 158, 255, 0.3);
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-card.active .stat-number {
+    color: #67C23A;
+}
+
+.stat-card.completed .stat-number {
+    color: #909399;
+}
+
+.stat-card.draft .stat-number {
+    color: #E6A23C;
+}
+
+.stat-card.total .stat-number {
+    color: #409EFF;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #606266;
+    margin-top: 0.25rem;
+}
+
+/* 筛选区域 */
+.filter-card {
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid #e4e7ed;
+    border-radius: 16px;
+}
+
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.filter-left {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-right {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* 作业列表 */
+.assignments-list {
+    margin-bottom: 2rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+}
+
+.assignments-table-container-233 {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    overflow-x: auto; /* 允许水平滚动，避免表头堆叠 */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.assignments-table-233 {
+    width: 100%;
+    table-layout: fixed; /* 使用固定表格布局，避免表头堆叠 */
+}
+
+.assignments-table-233 :deep(.el-table__header) {
+    background: #f8f9fa;
+}
+
+.assignments-table-233 :deep(.assignment-header-233 th) {
+    background: #f8f9fa !important;
+    color: #303133;
+    font-weight: 600;
+    border-bottom: 2px solid #e4e7ed;
+}
+
+/* 确保表头不会堆叠 */
+.assignments-table-233 :deep(.el-table__header-wrapper) {
+    overflow: visible;
+}
+
+/* 确保表格内容可以正确显示 */
+.assignments-table-233 :deep(.el-table__body) {
+    width: 100% !important;
+}
+
+.assignments-table-233 :deep(.assignment-row) {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.assignments-table-233 :deep(.assignment-row:hover) {
+    background: #f0f9ff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 作业信息 */
+.assignment-info {
+    padding: 0.5rem 0;
+}
+
+.assignment-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.assignment-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #303133;
+    margin: 0;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.assignment-status {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.assignment-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #909399;
+}
+
+/* 课程信息 */
+.course-info {
+    text-align: center;
+}
+
+.target-classes {
+    font-size: 0.8rem;
+    color: #909399;
+    margin-top: 0.25rem;
+}
+
+/* 截止日期 */
+.deadline-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.deadline-date {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: #303133;
+    font-weight: 500;
+}
+
+.deadline-status {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+}
+
+.deadline-status.normal {
+    color: #67C23A;
+    background: rgba(103, 194, 58, 0.1);
+}
+
+.deadline-status.warning {
+    color: #E6A23C;
+    background: rgba(230, 162, 60, 0.1);
+}
+
+.deadline-status.urgent {
+    color: #F56C6C;
+    background: rgba(245, 108, 108, 0.1);
+}
+
+.deadline-status.overdue {
+    color: #F56C6C;
+    background: rgba(245, 108, 108, 0.2);
+}
+
+.deadline-status.completed {
+    color: #909399;
+    background: rgba(144, 147, 153, 0.1);
+}
+
+.deadline-status.draft {
+    color: #E6A23C;
+    background: rgba(230, 162, 60, 0.1);
+}
+
+/* 提交设置 */
+.submission-settings {
+    text-align: center;
+}
+
+.max-submissions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: #303133;
+    margin-bottom: 0.5rem;
+}
+
+.submission-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* 附件信息 */
+.attachments-info {
+    text-align: center;
+}
+
+.has-attachments {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.attachment-count {
+    font-size: 0.8rem;
+    color: #606266;
+}
+
+.no-attachments {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    color: #909399;
+    font-size: 0.8rem;
+}
+
+/* 提交统计 */
+.submission-stats {
+    text-align: center;
+}
+
+.stats-numbers {
+    margin-bottom: 0.5rem;
+}
+
+.submitted-count {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #303133;
+}
+
+.total-students {
+    color: #909399;
+}
+
+.stats-progress {
+    margin-bottom: 0.25rem;
+}
+
+.stats-label {
+    font-size: 0.8rem;
+    color: #606266;
+}
+
+/* 操作按钮 */
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 分页 */
+.pagination-section {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+}
+
+/* 对话框内容 */
+.attachments-dialog-content {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.attachments-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.attachment-item:hover {
+    background: #e6f7ff;
+    border-color: #409EFF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.attachment-icon {
+    flex-shrink: 0;
+}
+
+.attachment-info {
+    flex: 1;
+}
+
+.attachment-name {
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 0.25rem;
+}
+
+.attachment-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #909399;
+}
+
+.attachment-actions {
+    flex-shrink: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .page-header {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .header-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-my-assignments-content {
+        padding: 1rem;
+    }
+
+    .filter-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-left,
+    .filter-right {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .assignment-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .assignment-status {
+        align-self: flex-start;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .submission-statistics {
+        grid-template-columns: 1fr;
+    }
+
+    .table-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .assignment-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .attachment-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+}

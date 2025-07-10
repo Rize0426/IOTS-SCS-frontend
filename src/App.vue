@@ -3,7 +3,7 @@
   <div class="app-container">
 
     <!-- 头部组件 -->
-      <Header />
+    <Header id="main-head"/>
 
     <!-- 主内容区（路由视图） -->
     <main class="main-content">
@@ -11,7 +11,7 @@
     </main>
 
     <!-- 底部组件 -->
-    <Footer />
+    <Footer id="main-foot"/>
   </div>
 </template>
 

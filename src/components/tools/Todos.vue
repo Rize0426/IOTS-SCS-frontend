@@ -9,32 +9,23 @@
     <div v-else class="todo-list">
       <el-empty v-if="filteredTodos.length === 0" description="暂无未完成待办" />
 
-      <el-card
-          v-for="todo in sortedTodos"
-          :key="todo.id"
-          class="todo-item"
-          shadow="hover"
-      >
+      <el-card v-for="todo in sortedTodos" :key="todo.id" class="todo-item" shadow="hover">
         <div class="todo-content">
           <!-- 类型标签（作业/考试） -->
-          <el-tag
-              size="small"
-              :type="todo.type === 'homework' ? 'primary' : 'danger'"
-          >
+          <el-tag size="small" :type="todo.type === 'homework' ? 'primary' : 'danger'">
             {{ todo.type === 'homework' ? '作业' : '考试' }}
           </el-tag>
 
           <!-- 可跳转的标题（关键修改点） -->
-          <router-link
-              :to="`/course/${todo.courseId}`"
-              class="todo-title-link"
-          >
+          <router-link :to="`/course/${todo.courseId}`" class="todo-title-link">
             <span class="todo-title">{{ todo.title }}</span>
           </router-link>
 
           <!-- 截止时间（日期+时间） -->
           <div class="todo-deadline">
-            <el-icon><Clock /></el-icon>
+            <el-icon>
+              <Clock />
+            </el-icon>
             <span>{{ formatDate(todo.deadline) }}</span>
           </div>
         </div>
@@ -46,7 +37,7 @@
 <script>
 import { Clock } from '@element-plus/icons-vue'
 import axios from 'axios'
-
+import { customFetch } from '@/api/customFetch'
 export default {
   components: { Clock },
   data() {
@@ -100,9 +91,39 @@ export default {
     async fetchTodos() {
       try {
         this.loading = true
-        // 真实接口：axios.get('/api/student/todos')
+        /*// 真实接口：axios.get('/api/student/todos')
         await new Promise(resolve => setTimeout(resolve, 800))
-        this.todos = this.apiTodos // 赋值模拟数据
+        this.todos = this.apiTodos // 赋值模拟数据*/
+        const response = await customFetch('/api/assignments/todo')
+        const data = await response.json()
+        if (data.data) {
+          this.todos = data.data.map((item) => {
+            const res = {
+              id: item.id,
+              title: item.title,
+              type: item.type,
+              completed: false,
+              deadline: item.endTime,
+              courseId: item.courseId
+            }
+            return res
+          })
+        }
+        const response2 = await customFetch('/api/exams/todo')
+        const data2 = await response2.json()
+        if (data2.data) {
+          this.todos = [...this.todos, ...data2.data.map((item) => {
+            const res = {
+              id: item.id,
+              title: item.title,
+              type: item.type,
+              completed: false,
+              deadline: item.endTime,
+              courseId: item.courseId
+            }
+            return res
+          })]
+        }
       } catch (error) {
         console.error('获取待办失败:', error)
         this.$message.error('获取待办事项失败')
@@ -144,10 +165,14 @@ export default {
 
 .todo-list {
   gap: 12px;
-  max-height: 200px; /* 限制最大高度（可根据需求调整） */
-  overflow-y: auto; /* 超出部分垂直滚动 */
-  overflow-x: hidden; /* 隐藏水平滚动条 */
-  padding-right: 5px; /* 防止滚动条遮挡内容 */
+  max-height: 200px;
+  /* 限制最大高度（可根据需求调整） */
+  overflow-y: auto;
+  /* 超出部分垂直滚动 */
+  overflow-x: hidden;
+  /* 隐藏水平滚动条 */
+  padding-right: 5px;
+  /* 防止滚动条遮挡内容 */
 }
 
 .todo-item {
@@ -164,8 +189,10 @@ export default {
 }
 
 .todo-title-link {
-  color: #409EFF; /* Element UI 主色（与标签颜色统一） */
-  text-decoration: none; /* 去掉下划线 */
+  color: #409EFF;
+  /* Element UI 主色（与标签颜色统一） */
+  text-decoration: none;
+  /* 去掉下划线 */
   font-size: 16px;
   font-weight: 500;
   flex: 1;
@@ -173,8 +200,10 @@ export default {
 }
 
 .todo-title-link:hover {
-  color: #66b1ff; /* 悬停颜色加深 */
-  text-decoration: underline; /* 悬停下划线（可选） */
+  color: #66b1ff;
+  /* 悬停颜色加深 */
+  text-decoration: underline;
+  /* 悬停下划线（可选） */
 }
 
 .todo-title {

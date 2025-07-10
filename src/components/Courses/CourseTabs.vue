@@ -20,23 +20,27 @@
     </el-tab-pane>
 
     <el-tab-pane label="作业列表" name="assignments">
-      <AssignmentsTab
+      <!--<AssignmentsTab
           :assignments="assignments"
           :loading="loading"
           @submit-assignment="handleSubmitAssignment"
           @view-submission="handleViewSubmission"
           @download-attachments="handleDownloadAttachments"
-      />
+      />-->
+      <!--TODO 更改课程id-->
+      <AssignmentListView :course-id="123456" />
     </el-tab-pane>
 
     <el-tab-pane label="考试" name="exams">
-      <ExamsTab
+      <!--<ExamsTab
           :exams="exams"
           :loading="loading"
           @reserve-exam="handleReserveExam"
           @start-exam="handleStartExam"
           @view-result="handleViewResult"
-      />
+      />-->
+      <!--TODO 更改课程id-->
+      <ExamListView :course-id="123456" />
     </el-tab-pane>
 
     <el-tab-pane label="讨论区" name="discussions">
@@ -57,13 +61,16 @@ import VideosTab from './tabs/VideosTab.vue';
 import AssignmentsTab from './tabs/AssignmentsTab.vue';
 import ExamsTab from './tabs/ExamsTab.vue';
 import DiscussionsTab from './tabs/DiscussionsTab.vue';
+import AssignmentListView from '@/pages/AssignmentSystemView/student/list/AssignmentListView.vue';
+import ExamListView from '@/pages/ExamSystemView/student/list/ExamListView.vue';
 
 const props = defineProps({
   chapters: Array,
   assignments: Array,
   exams: Array,
   discussions: Array,
-  loading: Boolean
+  loading: Boolean,
+  courseId:Number
 });
 
 const emit = defineEmits([

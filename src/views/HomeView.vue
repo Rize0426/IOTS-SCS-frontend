@@ -11,7 +11,6 @@
       <Courses class="course-col" />
       <Todos class="todo-col" />
     </div>
-
   </div>
 </template>
 

@@ -1,0 +1,579 @@
+.assignment-detail-container {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.background-decoration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.circle-1 {
+  width: 200px;
+  height: 200px;
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.circle-2 {
+  width: 150px;
+  height: 150px;
+  top: 60%;
+  right: 15%;
+  animation-delay: 2s;
+}
+
+.circle-3 {
+  width: 100px;
+  height: 100px;
+  bottom: 20%;
+  left: 20%;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+.assignment-detail-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* 返回按钮 */
+.back-section {
+  margin-bottom: 2rem;
+}
+
+/* 作业头部信息 */
+.assignment-header-card {
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e4e7ed;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.assignment-header {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.assignment-main-info {
+  flex: 1;
+}
+
+.assignment-title-section {
+  margin-bottom: 2rem;
+}
+
+.assignment-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #303133;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.assignment-meta-tags {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.assignment-time-score {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #409EFF;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-label {
+  color: #909399;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+
+.info-value {
+  color: #303133;
+  font-weight: 600;
+}
+
+.info-value.urgent {
+  color: #F56C6C;
+}
+
+.info-value.countdown {
+  font-size: 1.1rem;
+}
+
+.info-value.countdown.urgent {
+  color: #F56C6C;
+  font-weight: 700;
+}
+
+/* 教师信息卡片 */
+.teacher-info-card {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  min-width: 200px;
+  border: 2px solid #e4e7ed;
+}
+
+.teacher-avatar {
+  margin-bottom: 1rem;
+}
+
+.teacher-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 0.5rem;
+}
+
+.teacher-title {
+  color: #606266;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.teacher-department {
+  color: #909399;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* 卡片通用样式 */
+.assignment-content-card,
+.attachments-card,
+.submission-history-card {
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e4e7ed;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #303133;
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+/* 作业内容 */
+.assignment-description {
+  line-height: 1.8;
+  color: #606266;
+}
+
+.description-content {
+  margin-bottom: 2rem;
+}
+
+.description-content :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.assignment-requirements,
+.grading-criteria {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #67C23A;
+}
+
+.assignment-requirements h4,
+.grading-criteria h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #303133;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.requirements-content,
+.criteria-content {
+  color: #606266;
+  line-height: 1.6;
+}
+
+.requirements-content :deep(ol),
+.requirements-content :deep(ul) {
+  padding-left: 1.5rem;
+}
+
+.requirements-content :deep(li) {
+  margin-bottom: 0.5rem;
+}
+
+.criteria-content :deep(table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 附件网格 */
+.attachments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.attachment-item:hover {
+  background: #e6f7ff;
+  border-color: #409EFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.attachment-icon {
+  flex-shrink: 0;
+}
+
+.attachment-info {
+  flex: 1;
+}
+
+.attachment-name {
+  font-weight: 600;
+  color: #303133;
+  display: block;
+  margin-bottom: 0.25rem;
+  overflow-wrap: break-word;
+}
+
+.attachment-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #909399;
+}
+
+.attachment-actions {
+  flex-shrink: 0;
+}
+
+/* 提交历史 */
+.submissions-timeline {
+  padding: 1rem 0;
+}
+
+.submission-card {
+  margin-bottom: 1rem;
+  border: 1px solid #e4e7ed;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.submission-card.latest-submission {
+  border-color: #409EFF;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.submission-info {
+  flex: 1;
+}
+
+.submission-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.submission-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.submit-time {
+  color: #606266;
+  font-size: 0.9rem;
+}
+
+.submission-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.submission-content {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.submission-content h5 {
+  color: #303133;
+  margin-bottom: 0.5rem;
+}
+
+.submission-content p {
+  color: #606266;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.submission-files {
+  margin-bottom: 1rem;
+}
+
+.submission-files h5 {
+  color: #303133;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.files-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-item:hover {
+  background: #e6f7ff;
+  border-color: #409EFF;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  color: #303133;
+  font-weight: 500;
+}
+
+.file-size {
+  font-size: 0.8rem;
+  color: #909399;
+}
+
+/* 批改结果 */
+.submission-grade {
+  background: #f0f9ff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #b3d8ff;
+}
+
+.grade-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #409EFF;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.grade-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grade-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.score-label {
+  color: #606266;
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.score-total {
+  color: #909399;
+}
+
+.grade-feedback {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #d9ecff;
+}
+
+.feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #409EFF;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-content {
+  color: #606266;
+  line-height: 1.6;
+}
+
+.grade-time {
+  color: #909399;
+  font-size: 0.9rem;
+}
+
+.no-submissions {
+  text-align: center;
+  padding: 2rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .assignment-detail-content {
+    padding: 1rem;
+  }
+
+  .assignment-header {
+    flex-direction: column;
+  }
+
+  .teacher-info-card {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .attachments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .submission-actions {
+    align-self: stretch;
+  }
+
+  .grade-score {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .assignment-title {
+    font-size: 1.5rem;
+  }
+
+  .assignment-meta-tags {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .files-list {
+    flex-direction: column;
+  }
+
+  .submission-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

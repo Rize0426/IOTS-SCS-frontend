@@ -10,6 +10,7 @@ import 'element-plus/dist/index.css'  // Element Plus 样式
 import App from './App.vue'
 import router from './router'
 import 'default-passive-events'  // 处理 Chrome 被动事件警告
+import AIChatSidebarComponent from './components/AIChatSidebar/AIChatSidebarComponent.vue'
 
 // 创建 Vue 应用实例
 const app = createApp(App)
@@ -27,3 +28,6 @@ app.use(ElementPlus)
 
 // 挂载应用
 app.mount('#app')
+
+createApp(AIChatSidebarComponent).use(ElementPlus).mount('#ai-chat-sidebar')
+
