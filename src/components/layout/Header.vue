@@ -54,7 +54,7 @@ export default {
 
     // 跳转到首页
     const goToHome = () => {
-      router.push('/')
+      router.push('/S-home')
     }
 
     // 登出方法（关键修复）

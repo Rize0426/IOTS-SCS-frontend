@@ -35,7 +35,7 @@ const router = createRouter({
         },
         {
             path:'/',
-            redirect:'/login'
+            redirect:'/S-home'
         },
         {
             path: '/userMessage',
