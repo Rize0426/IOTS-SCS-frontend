@@ -18,9 +18,9 @@
                   <p class="student-id">学号: {{ learningData.user.identity }}</p>
                   <div class="contact-info">
                     <el-tag type="info" size="small" v-if="learningData.user.email">{{ learningData.user.email
-                    }}</el-tag>
+                      }}</el-tag>
                     <el-tag type="success" size="small" v-if="learningData.user.phone">{{ learningData.user.phone
-                    }}</el-tag>
+                      }}</el-tag>
                   </div>
                 </div>
               </div>
@@ -159,7 +159,8 @@
 
         <!-- 智能推荐 -->
         <div class="grid-item full-width" style="margin-top: 20px;"
-          v-loading="recommendLoading || aiLoading || pathLoading || recommendLoading" element-loading-text="智能推荐生成中...">
+          v-loading="recommendLoading || aiLoading || pathLoading || recommendLoading"
+          element-loading-text="智能推荐生成中...">
           <SmartRecommendView :recommendations="learningData.recommendations"
             v-if="learningData.recommendations && !aiLoading && !pathLoading && !recommendLoading" />
           <div v-else>
@@ -330,39 +331,48 @@ const fetchData = async () => {
       ElMessage.error("获取学习分析数据失败");
       return;
     }
-    learningData.user = data.data.user;
-    if(learningData.user.avatarUrl===null){
-      learningData.user.avatarUrl=userStore.userInfo.avatar_url
+    if (data.data.user) {
+      learningData.user = data.data.user;
+      if (learningData.user.avatarUrl === null) {
+        learningData.user.avatarUrl = userStore.userInfo.avatar_url
+      }
+    } else {
+      learningData.user.avatarUrl = userStore.userInfo.avatar_url
+      learningData.user.name = userStore.userInfo.account
+      learningData.user.uid = userStore.userInfo.uid
     }
-    const clr = data.data.courseLearnResults;
-    if (clr.length < learningData.courseLearnResults.length) {
-      learningData.courseLearnResults.splice(0, clr.length);
-      learningData.courseLearnResults.push(...clr.map((c: any) => {
-        const randomNumbers = Array.from({ length: 7 }, () =>
-          Math.floor(Math.random() * 16) // 生成 0-15 之间的整数
-        );
-        const totalHours = randomNumbers.reduce((sum: any, num: any) => sum + num, 0);
-        const studiedHours = Math.floor(Math.random() * totalHours);
-        function getRandomDate() {
-          const start = new Date(2025, 1, 16);
-          const end = new Date(2025, 5, 31);
-          const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
-          return new Date(randomTime);
-        }
-        return {
-          ...c,
-          timeAnalysis: {
-            courseId: c.courseId,
-            totalHours: totalHours,
-            studiedHours: studiedHours,
-            progress: parseFloat((studiedHours / totalHours * 100).toFixed(2)),
-            weeklyStudyTime: randomNumbers,
-            lastStudyDate: getRandomDate().toISOString()
+    if (data.data.courseLearnResults) {
+      const clr = data.data.courseLearnResults;
+      if (clr.length < learningData.courseLearnResults.length) {
+        learningData.courseLearnResults.splice(0, clr.length);
+        learningData.courseLearnResults.push(...clr.map((c: any) => {
+          const randomNumbers = Array.from({ length: 7 }, () =>
+            Math.floor(Math.random() * 16) // 生成 0-15 之间的整数
+          );
+          const totalHours = randomNumbers.reduce((sum: any, num: any) => sum + num, 0);
+          const studiedHours = Math.floor(Math.random() * totalHours);
+          function getRandomDate() {
+            const start = new Date(2025, 1, 16);
+            const end = new Date(2025, 5, 31);
+            const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
+            return new Date(randomTime);
           }
-        }
-      }));
-      console.log(learningData.courseLearnResults)
+          return {
+            ...c,
+            timeAnalysis: {
+              courseId: c.courseId,
+              totalHours: totalHours,
+              studiedHours: studiedHours,
+              progress: parseFloat((studiedHours / totalHours * 100).toFixed(2)),
+              weeklyStudyTime: randomNumbers,
+              lastStudyDate: getRandomDate().toISOString()
+            }
+          }
+        }));
+        console.log(learningData.courseLearnResults)
+      }
     }
+
     learningData.knowledgeAnalysisList = data.data.knowledgeAnalysisList;
     // AI建议先清空
     learningData.aiAnalysisList = [];
