@@ -45,6 +45,7 @@ export default {
   width: 100%; /* 占满父级宽度 */
   padding: 0 20px; /* 与页面边缘的距离（关键：调整此值控制离墙距离） */
   box-sizing: border-box; /* 确保padding包含在宽度内 */
+  
 }
 
 /* 左侧栏 */
