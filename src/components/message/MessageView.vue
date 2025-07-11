@@ -5,7 +5,9 @@
       <h1>消息中心</h1>
       <div class="discussion-button">
         <el-button type="primary" @click="goToDiscussionForum">
-          <el-icon><ChatLineRound /></el-icon> 学习讨论区
+          <el-icon>
+            <ChatLineRound />
+          </el-icon> 学习讨论区
         </el-button>
       </div>
     </div>
@@ -15,11 +17,7 @@
       <!-- 左侧联系人列表 -->
       <div class="contacts-panel">
         <div class="search-bar">
-          <el-input
-              v-model="searchQuery"
-              placeholder="搜索联系人..."
-              prefix-icon="Search"
-          />
+          <el-input v-model="searchQuery" placeholder="搜索联系人..." prefix-icon="Search" />
         </div>
 
         <div class="contacts-list">
@@ -33,19 +31,10 @@
           </div>
 
           <!-- 联系人列表（保留原模拟数据结构） -->
-          <div
-              v-for="contact in contacts"
-              :key="contact.id"
-              class="contact-item"
-              :class="{ 'active': currentContact?.id === contact.id }"
-              @click="openChat(contact)"
-          >
+          <div v-for="contact in contacts" :key="contact.id" class="contact-item"
+            :class="{ 'active': currentContact?.id === contact.id }" @click="openChat(contact)">
             <div class="contact-avatar">
-              <el-avatar
-                  :src="contact.avatar"
-                  :size="40"
-                  @error="handleContactAvatarError($event)"
-              >
+              <el-avatar :src="contact.avatar" :size="40" @error="handleContactAvatarError($event)">
                 {{ contact.name.substring(0, 1).toUpperCase() }}
               </el-avatar>
             </div>
@@ -77,7 +66,9 @@
           </div>
           <div class="header-actions">
             <el-dropdown @command="handleCommand">
-              <el-icon><MoreFilled /></el-icon>
+              <el-icon>
+                <MoreFilled />
+              </el-icon>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="block">屏蔽用户</el-dropdown-item>
@@ -100,85 +91,54 @@
 
           <!-- 按时间分组的消息（保留原模拟数据结构） -->
           <template v-else>
-            <div
-                v-for="(group, groupIndex) in groupedMessages"
-                :key="groupIndex"
-                class="message-group"
-            >
+            <div v-for="(group, groupIndex) in groupedMessages" :key="groupIndex" class="message-group">
               <!-- 时间标题 -->
               <div class="time-group">
                 {{ formatGroupTime(group.timestamp) }}
               </div>
 
               <!-- 该时间组的消息 -->
-              <div
-                  v-for="(msg, msgIndex) in group.messages"
-                  :key="`${groupIndex}-${msgIndex}`"
-                  class="message-wrapper"
-                  :class="{ 'own-message': msg.senderId === currentUser.id }"
-              >
+              <div v-for="(msg, msgIndex) in group.messages" :key="`${groupIndex}-${msgIndex}`" class="message-wrapper"
+                :class="{ 'own-message': msg.senderId === currentUser.id }">
                 <!-- 对方消息：显示头像+名称 -->
                 <div v-if="msg.senderId !== currentUser.id" class="message-sender-info">
-                  <el-avatar
-                      :src="msg.senderAvatar || DEFAULT_AVATAR"
-                      size="small"
-                      @error="handleMessageAvatarError($event, msg)"
-                  />
+                  <el-avatar :src="msg.senderAvatar || DEFAULT_AVATAR" size="small"
+                    @error="handleMessageAvatarError($event, msg)" />
                   <span class="sender-name">{{ msg.senderName }}</span>
                 </div>
 
                 <!-- 消息气泡（自适应高度） -->
                 <div class="message-bubble-container">
-                  <div class="message-bubble" :class="{'my-bubble': msg.senderId === currentUser.id}">
+                  <div class="message-bubble" :class="{ 'my-bubble': msg.senderId === currentUser.id }">
                     {{ msg.content }}
                     <div class="message-time-row">
                       <div class="message-time">{{ formatTime(msg.timestamp) }}</div>
-                      <div class="read-status" :class="{'read': msg.isRead, 'unread': !msg.isRead}">
+                      <div class="read-status"
+                        :class="{ 'read': msg.isRead, 'unread': !msg.isRead }">
                         {{ msg.isRead ? '已读' : '未读' }}
                       </div>
                     </div>
                   </div>
                   <!-- 未读状态小红点 -->
-                  <span
-                      v-if="msg.receiverId === currentContact.id && !msg.isRead"
-                      class="unread-dot"
-                  ></span>
+                  <span v-if="msg.receiverId === currentContact.id && !msg.isRead" class="unread-dot"></span>
                 </div>
 
                 <!-- 自己消息：显示头像（右侧） -->
                 <div v-if="msg.senderId === currentUser.id" class="message-sender-info own-avatar">
-                  <el-avatar
-                      :src="currentUser.avatar"
-                      size="small"
-                      @error="handleSelfAvatarError($event)"
-                  />
+                  <el-avatar :src="currentUser.avatar" size="small" @error="handleSelfAvatarError($event)" />
                 </div>
               </div>
             </div>
+            <!-- 输入框区域（固定高度） -->
+            <div class="message-input">
+              <el-input v-model="newMessage" placeholder="输入消息..." :disabled="sendingMessage"
+                @keyup.enter.prevent="sendMessage" type="textarea" :rows="2" autosize :maxlength="500"
+                class="fixed-height-input" />
+              <el-button type="primary" @click="sendMessage" :loading="sendingMessage" class="send-btn">
+                发送
+              </el-button>
+            </div>
           </template>
-        </div>
-
-        <!-- 输入框区域（固定高度） -->
-        <div class="message-input">
-          <el-input
-              v-model="newMessage"
-              placeholder="输入消息..."
-              :disabled="sendingMessage"
-              @keyup.enter.prevent="sendMessage"
-              type="textarea"
-              :rows="2"
-              autosize
-              :maxlength="500"
-              class="fixed-height-input"
-          />
-          <el-button
-              type="primary"
-              @click="sendMessage"
-              :loading="sendingMessage"
-              class="send-btn"
-          >
-            发送
-          </el-button>
         </div>
       </div>
     </div>
@@ -207,7 +167,8 @@ import {
   sendMessage as apiSendMessage,
   markMessageAsRead,
   blockContact,
-  reportContact }from '@/api/chat';
+  reportContact
+} from '@/api/chat';
 import { useUserStore } from '@/stores/auth';
 
 // ------------------------------
@@ -290,7 +251,7 @@ const groupedMessages = computed(() => {
 
   // 克隆消息数组并排序（按时间戳升序）
   const sortedMessages = [...currentMessages.value].sort(
-      (a, b) => a.timestamp - b.timestamp
+    (a, b) => a.timestamp - b.timestamp
   );
 
   const groups = [];
@@ -342,6 +303,7 @@ const initialize = async () => {
 // 打开聊天（修改：添加消息已读处理）
 // ------------------------------
 const openChat = async (contact) => {
+
   currentContact.value = contact;
   currentMessages.value = []; // 清空之前的消息
   sendingMessage.value = false; // 重置发送状态
@@ -350,13 +312,12 @@ const openChat = async (contact) => {
     // 加载该联系人的聊天记录（使用原模拟数据结构）
     const res = await getChatMessages(contact.id);
     currentMessages.value = res.data.map(msg => ({
-      ...msg,
-      isRead: msg.receiverId === currentUser.value.id // 消息接收者是当前用户时标记为已读
+      ...msg
     }));
 
     // 标记当前聊天窗口中对方发送的消息为已读
     const unreadMessages = currentMessages.value.filter(
-        msg => msg.senderId !== currentUser.value.id && !msg.isRead
+      msg => msg.senderId !== currentUser.value.id && !msg.isRead
     );
 
     // 更新未读计数
@@ -371,7 +332,7 @@ const openChat = async (contact) => {
     // 更新联系人最后一条消息状态
     if (contact.lastMessage) {
       const latestMessage = currentMessages.value.find(
-          msg => msg.id === contact.lastMessage.id
+        msg => msg.id === contact.lastMessage.id
       );
       if (latestMessage) {
         contact.lastMessage.isRead = latestMessage.isRead;
@@ -398,11 +359,11 @@ const sendMessage = async () => {
   sendingMessage.value = true;
 
   const messageData = {
-    senderId: currentUser.value.id,
-    receiverId: currentContact.value.id,
+    sender_id: currentUser.value.id,
+    receiver_id: currentContact.value.partnerId,
     content: newMessage.value,
-    timestamp: Date.now(),
-    isRead: true // 自己发送的消息初始设为已读
+    type: "TEXT",
+    conversation_id: currentContact.value.id,
   };
 
   try {
@@ -491,7 +452,7 @@ const goToDiscussionForum = () => {
 const searchContacts = computed(() => {
   const query = searchQuery.value.toLowerCase();
   return contacts.value.filter(contact =>
-      contact.name.toLowerCase().includes(query)
+    contact.name.toLowerCase().includes(query)
   );
 });
 

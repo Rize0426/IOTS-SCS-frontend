@@ -124,9 +124,8 @@
 import UserCenter from '@/components/user/UserCenter.vue'
 import FunctionButtons from '@/components/tools/FunctionButtons.vue'
 import defaultAvatar from '@/assets/images/个人信息头像.png';
-import {getUserInfo, updatePassword} from "@/api/auth.js";
+import {getUserInfo, updatePassword, updateAvatar , updateUserInfo} from "@/api/auth.js";
 import { uploadFile } from "@/api/file.js";
-import { updateUserInfo } from "@/api/auth.js";
 
 function translateRole(role) {
   switch (role) {
@@ -275,8 +274,11 @@ export default {
       }
       reader.readAsDataURL(file)
 
-      // 实际项目中，这里应该调用API上传头像到服务器
-      // uploadFile(file,userInfo.uid)
+      const avatarFile = new FormData();
+      avatarFile.append("avatar", file);
+
+      // 调用API上传头像到服务器
+      const avatarRes = await updateAvatar(avatarFile);
     },
 
     // 修改密码
@@ -285,13 +287,16 @@ export default {
         alert('两次输入的新密码不一致')
         return
       }
+      if (this.newPassword === "" || this.confirmPassword === "" || this.oldPassword === "") {
+        alert("密码不可为空");
+        return
+      }
       const updateFields = {
         oldPassword: this.oldPassword,
         newPassword: this.newPassword
       }
 
       try {
-        console.log(updateFields);
         const res = await updatePassword(updateFields);
         if (res.code === 200) {
           alert('密码修改成功')

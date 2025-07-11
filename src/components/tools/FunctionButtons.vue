@@ -22,7 +22,7 @@ const functionList = [
   {
     label: '首页',
     type: 'primary',
-    path: '/'
+    path: '/S-home'
   },
   {
     label: '个人信息',

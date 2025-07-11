@@ -86,11 +86,18 @@ export const studentCourseApi = {
      * @param {string} courseId - 课程ID
      * @returns {Promise} - 课时列表
      */
-    getLessons(courseId) {
+    getLessonsRes(courseId) {
         return request({
-            url: `/api/courses/${courseId}/lessons`,
+            url: `/api/courses/${courseId}/lessons/resources`,
             method: 'get'
         });
+    },
+
+    getLessonsVideo(courseId) {
+        return request({
+            url: `/api/courses/${courseId}/lessons/video`,
+            method: 'get'
+        })
     },
 
     /**

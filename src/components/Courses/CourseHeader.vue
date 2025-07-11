@@ -48,13 +48,11 @@ const props = defineProps({
   endDate: String,
   totalLessons: Number,
   credit: Number,
-  totalCourseLessons: Number,
-  completedLessons: Number
+  progress: Number
 });
 
 const courseProgress = computed(() => {
-  if (props.totalCourseLessons === 0) return 0;
-  return Math.round((props.completedLessons / props.totalCourseLessons) * 100);
+  return props.progress;
 });
 
 const progressColor = computed(() => {

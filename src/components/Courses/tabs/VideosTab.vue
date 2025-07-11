@@ -1,23 +1,26 @@
-<!-- components/course/tabs/VideosTab.vue -->
 <template>
   <div class="videos-section">
     <div class="section-title">视频学习</div>
 
-    <div v-for="(chapter, index) in chapters" :key="index" class="chapter-block">
+    <div v-if="loading">
+      <el-skeleton :rows="5" animated />
+    </div>
+    <div v-else-if="chapters.length === 0 || chapters.every(c => c.videos.length === 0)">
+      <el-empty description="暂无视频内容"></el-empty>
+    </div>
       <div class="chapter-title">
-        <el-divider>第{{ chapter.chapter_number }}章：{{ chapter.chapter_name }}</el-divider>
+        <el-divider content-position="left">{{ chapters.chapter_title }}</el-divider>
       </div>
 
-      <!-- 视频列表 -->
       <div class="video-list">
         <div
-            v-for="(video, videoIndex) in chapter.videos"
+            v-for="(video, videoIndex) in chapters.videos"
             :key="videoIndex"
             class="video-item"
         >
           <div class="video-card">
             <div class="video-thumbnail">
-              <img :src="video.thumbnail || defaultVideoThumbnail" alt="视频缩略图" />
+              <img :src="video.thumbnail || defaultVideoThumbnail" :alt="video.title || '视频缩略图'" />
               <div class="video-duration">{{ formatDuration(video.duration) }}</div>
               <div class="video-play-icon" @click="playVideo(video)">
                 <el-icon><VideoPlay /></el-icon>
@@ -30,7 +33,7 @@
                 <span class="video-size">{{ formatFileSize(video.size) }}</span>
                 <span class="video-date">{{ formatDate(video.upload_time) }}</span>
               </div>
-              <div class="video-description">{{ video.description }}</div>
+              <div class="video-description">{{ video.description || '暂无描述' }}</div>
             </div>
 
             <div class="video-actions">
@@ -43,7 +46,7 @@
               </el-button>
 
               <el-progress
-                  v-if="video.view_progress"
+                  v-if="video.view_progress !== undefined"
                   :percentage="video.view_progress"
                   :stroke-width="4"
                   :format="videoProgressFormat"
@@ -53,18 +56,24 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { VideoPlay } from '@element-plus/icons-vue';
+import { ElMessage, ElSkeleton, ElEmpty } from 'element-plus'; // 引入Element Plus组件
 
 // 定义props
 const props = defineProps({
-  chapters: Array,
-  loading: Boolean
+  chapters: {
+    type: Array,
+    default: () => []
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
 });
 
 // 定义事件
@@ -75,20 +84,33 @@ const defaultVideoThumbnail = 'https://via.placeholder.com/300x180?text=视频�
 
 // 播放视频
 const playVideo = (video) => {
+  if (!video.video_file_url) {
+    ElMessage.warning('视频资源URL缺失，无法播放！');
+    return;
+  }
   emit('play-video', video);
 };
 
-// 格式化视频时长
+// 格式化视频时长 (假定durationInSeconds以秒为单位)
 const formatDuration = (durationInSeconds) => {
-  if (!durationInSeconds) return '00:00';
+  if (typeof durationInSeconds !== 'number' || isNaN(durationInSeconds) || durationInSeconds < 0) return '00:00';
   const hours = Math.floor(durationInSeconds / 3600);
   const minutes = Math.floor((durationInSeconds % 3600) / 60);
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  const seconds = Math.floor(durationInSeconds % 60);
+
+  const parts = [];
+  if (hours > 0) {
+    parts.push(hours.toString().padStart(2, '0'));
+  }
+  parts.push(minutes.toString().padStart(2, '0'));
+  parts.push(seconds.toString().padStart(2, '0'));
+
+  return parts.join(':');
 };
 
 // 格式化文件大小
 const formatFileSize = (bytes) => {
-  if (!bytes) return '0 B';
+  if (typeof bytes !== 'number' || isNaN(bytes) || bytes < 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -98,12 +120,20 @@ const formatFileSize = (bytes) => {
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '无日期';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) { // 检查日期是否有效
+      return '无效日期';
+    }
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  } catch (e) {
+    console.error("日期格式化错误:", e);
+    return '无效日期';
+  }
 };
 
 // 视频进度显示格式
@@ -214,6 +244,11 @@ const videoProgressFormat = (percentage) => {
   opacity: 1;
 }
 
+.video-play-icon .el-icon {
+  font-size: 24px;
+  color: white;
+}
+
 .video-info {
   padding: 10px 0;
 }
@@ -236,15 +271,19 @@ const videoProgressFormat = (percentage) => {
   color: #606266;
   font-size: 0.9rem;
   margin-bottom: 10px;
+  word-break: break-all;
 }
 
 .video-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* 允许换行 */
+  gap: 10px; /* 元素间距 */
 }
 
 .video-progress {
-  width: 100%;
+  flex-grow: 1; /* 进度条占据剩余空间 */
+  min-width: 150px; /* 确保进度条有最小宽度 */
 }
 </style>
