@@ -120,7 +120,7 @@
                 <!-- 对方消息：显示头像+名称 -->
                 <div v-if="msg.senderId !== currentUser.id" class="message-sender-info">
                   <el-avatar
-                      :src="msg.senderAvatar || DEFAULT_AVATAR"
+                      :src="msg.avatar || DEFAULT_AVATAR"
                       size="small"
                       @error="handleMessageAvatarError($event, msg)"
                   />
@@ -487,7 +487,8 @@ onMounted(() => {
 .messaging-dashboard {
   display: flex;
   flex-direction: column;
-  height: 70vh;
+  height: 100%;
+  width: 100%;
   background-color: #f5f7fa;
 
   .dashboard-header {

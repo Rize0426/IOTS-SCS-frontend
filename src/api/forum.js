@@ -1,6 +1,7 @@
 // src/api/forum.js
 import { ref } from 'vue'
-
+import { customFetch } from './customFetch'
+import { useUserStore } from '@/stores/auth'
 // 模拟用户数据
 const mockUsers = [
     { id: 1, name: '张三', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
@@ -8,7 +9,7 @@ const mockUsers = [
     { id: 3, name: '王五', avatar: 'https://randomuser.me/api/portraits/men/3.jpg' },
     { id: 4, name: '赵六', avatar: 'https://randomuser.me/api/portraits/women/4.jpg' }
 ]
-
+const userStore = useUserStore()
 // 当前登录用户 (模拟)
 const currentUser = ref(mockUsers[0])
 
@@ -68,71 +69,151 @@ const mockPosts = ref([
 
 // 获取帖子列表
 export const getPosts = async () => {
-    // 模拟API请求延迟
-    await new Promise(resolve => setTimeout(resolve, 300))
-    return [...mockPosts.value]
+    const response = await customFetch(`/posts/discussions?courseId=123456`)
+    const data = await response.json()
+    if (!data) {
+        throw Error("获取帖子失败")
+    }
+    return data.map(s => {
+        return {
+            id: s.post_id,
+            title: s.title,
+            content: s.preview,
+            author: {
+                id: s.user_id,
+                name: s.user_name,
+                avatar: s.avatar
+            },
+            createdAt: new Date(s.create_time),
+            likes: s.like_count,
+            liked: false,
+            replies: [],
+            reply_count: s.reply_count
+        }
+    })
 }
 
 // 获取单个帖子详情
 export const getPostById = async (postId) => {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    const post = mockPosts.value.find(p => p.id === postId)
-    if (!post) throw new Error('帖子不存在')
-    return post
+    const response = await customFetch(`/posts/${postId}`)
+    const data = await response.json()
+    if (!data) {
+        throw Error("获取该帖子内容失败")
+    }
+    return {
+        id: data.post_id,
+        title: data.title,
+        content: data.content,
+        author: {
+            id: data.user_id,
+            name: data.user_name,
+            avatar: data.avatar
+        },
+        createdAt: new Date(data.create_time),
+        likes: data.like_count,
+        liked: false,
+        replies: [...data.replies.map(s => {
+            return {
+                id: s.reply_id,
+                content: s.content,
+                createdAt: new Date(s.create_time),
+                author: {
+                    id: s.user_id,
+                    name: s.user_name,
+                    avatar: s.avatar
+                }
+            }
+        })]
+    }
 }
 
 // 创建新帖子
 export const createPost = async (postData) => {
-    await new Promise(resolve => setTimeout(resolve, 300))
     const newPost = {
-        id: mockPosts.value.length + 1,
         title: postData.title,
         content: postData.content,
-        author: currentUser.value,
-        createdAt: new Date(),
-        likes: 0,
-        liked: false,
-        replies: []
+        course_id: 123456,
+        user_id: userStore.userInfo.uid
     }
-    mockPosts.value.unshift(newPost)
-    return newPost
+    const response = await customFetch("/posts/createDiscussionPost", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newPost)
+    })
+    const data = await response.json()
+    if (!data) {
+        throw Error("发帖失败")
+    }
+    return {
+        id: data.post_id,
+        title: data.title,
+        content: data.content,
+        author: {
+            id: data.user_id,
+            name: data.user_name,
+            avatar: data.avatar
+        },
+        createdAt: new Date(data.create_time),
+        likes: data.like_count,
+        liked: false,
+        replies: [...data.replies.map(s => {
+            return {
+                id: s.reply_id,
+                content: s.content,
+                createdAt: new Date(s.create_time),
+                author: {
+                    id: s.user_id,
+                    name: s.user_name,
+                    avatar: s.avatar
+                }
+            }
+        })]
+    }
 }
 
 // 添加回复
 export const addReply = async (postId, content) => {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    const post = mockPosts.value.find(p => p.id === postId)
-    if (!post) throw new Error('帖子不存在')
-
-    const newReply = {
-        id: Date.now(), // 使用时间戳作为临时ID
-        content,
-        author: currentUser.value,
-        createdAt: new Date()
+    const response = await customFetch(`/posts/${postId}/replies`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userStore.userInfo.uid,
+            content: content
+        })
+    })
+    const data = await response.json()
+    if (!data) {
+        throw Error("回复失败")
     }
-
-    if (!post.replies) post.replies = []
-    post.replies.push(newReply)
-    return newReply
+    return {
+        id: data.reply_id,
+        content: data.content,
+        createdAt: new Date(data.create_time),
+        author: {
+            id: data.user_id,
+            name: data.user_name,
+            avatar: data.avatar
+        }
+    }
 }
 
 // 点赞/取消点赞帖子
 export const toggleLikePost = async (postId) => {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    const post = mockPosts.value.find(p => p.id === postId)
-    if (!post) throw new Error('帖子不存在')
-
-    if (post.liked) {
-        post.likes--
-    } else {
-        post.likes++
-    }
-    post.liked = !post.liked
-    return post
+    await customFetch(`/posts/${postId}/like`,{
+        method:"PUT"
+    })
+    return true
 }
 
 // 获取当前用户
 export const getCurrentUser = async () => {
-    await new Promise(resolve => setTimeout(resolve, 100))
-    return currentUser.value
+    return {
+        id:userStore.userInfo.uid,
+        name:userStore.userInfo.account,
+        avatar:userStore.userInfo.avatar_url
+    }
 }

@@ -8,7 +8,7 @@
     </div>
 
     <!-- 帖子列表 -->
-    <div class="posts-list">
+    <div class="posts-list" >
       <div v-for="post in posts" :key="post.id" class="post-item">
         <div class="post-header">
           <h3>{{ post.title }}</h3>
@@ -23,13 +23,13 @@
         <div class="post-footer">
           <div class="post-actions">
             <el-button type="text" @click="viewPostDetails(post.id)">
-              查看回复 ({{ post.replies ? post.replies.length : 0 }})
+              查看回复 ({{ post.reply_count??0 }})
             </el-button>
             <el-button type="text" @click="handleToggleLike(post.id)" v-if="post.liked">
               <el-icon><Star /></el-icon> 已点赞
             </el-button>
             <el-button type="text" @click="handleToggleLike(post.id)" v-else>
-              <el-icon><StarFilled /></el-icon> 点赞 ({{ post.likes }})
+              <el-icon><StarFilled /></el-icon> 点赞 ({{ post.likes??0 }})
             </el-button>
           </div>
         </div>
@@ -178,11 +178,15 @@ const viewPostDetails = (postId) => {
 // 切换点赞状态
 const handleToggleLike = async (postId) => {
   try {
-    const updatedPost = await apiToggleLikePost(postId);
+    const success = await apiToggleLikePost(postId);
     // 更新列表中的帖子状态
     const index = posts.value.findIndex(p => p.id === postId);
     if (index !== -1) {
-      posts.value[index] = updatedPost;
+      posts.value[index].likes+=success ? 1 : 0;
+      posts.value[index].liked = success;
+      setTimeout(() => {
+        posts.value[index].liked=false
+      }, 1000);
     }
   } catch (error) {
     console.error('点赞/取消点赞失败:', error);
@@ -205,7 +209,7 @@ onMounted(() => {
   margin: 0 auto;
   padding: 20px;
   background-color: #fff;
-  height: 70vh;
+  height: auto;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   border-radius: 8px;
   position: relative;
