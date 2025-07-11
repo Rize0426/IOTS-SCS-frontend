@@ -22,13 +22,8 @@
         </div>
 
         <div v-else class="note-items">
-          <div
-              v-for="note in notes"
-              :key="note.id"
-              class="note-item"
-              :class="{ active: currentNoteId === note.id }"
-              @click="selectNote(note)"
-          >
+          <div v-for="note in notes" :key="note.id" class="note-item" :class="{ active: currentNoteId === note.id }"
+            @click="selectNote(note)">
             <h3>{{ note.title || '无标题笔记' }}</h3>
             <p class="note-preview">{{ truncateContent(note.content) }}</p>
             <div class="note-meta">
@@ -60,12 +55,7 @@
             </el-form-item>
 
             <el-form-item label="内容">
-              <el-input
-                  v-model="currentNote.content"
-                  type="textarea"
-                  :rows="15"
-                  placeholder="请输入笔记内容"
-              />
+              <el-input v-model="currentNote.content" type="textarea" :rows="15" placeholder="请输入笔记内容" />
             </el-form-item>
           </el-form>
         </template>
@@ -120,7 +110,7 @@ const fetchNotes = async () => {
 
     // 如果有笔记且未选中，则默认选中第一个
     if (notes.value.length > 0 && !currentNoteId.value) {
-      selectNote(notes.value[0]);
+      /*selectNote(notes.value[0]);*/
     }
 
     console.log("error: " + error);
@@ -177,12 +167,13 @@ const saveNote = async () => {
       await updateNote(currentNoteId.value, currentNote);
       ElMessage.success('笔记更新成功');
     }
-    fetchNotes(); // 刷新笔记列表
+
   } catch (error) {
     console.error('保存笔记失败:', error);
     ElMessage.success('保存成功');
   } finally {
     loading.value = false;
+    fetchNotes(); // 刷新笔记列表
   }
 };
 
@@ -196,11 +187,14 @@ const confirmDelete = () => {
     try {
       await deleteNote(currentNoteId.value);
       ElMessage.success('笔记删除成功');
-      fetchNotes(); // 刷新笔记列表
-      selectNote(notes.value[0] || {}); // 选中第一个笔记或清空
+      //selectNote(notes.value[0] || {}); // 选中第一个笔记或清空
     } catch (error) {
       console.error('删除笔记失败:', error);
       ElMessage.success('删除成功');
+    }finally{
+      activeTab.value = 'list';
+      currentNoteId.value = '';
+      await fetchNotes(); // 刷新笔记列表
     }
   }).catch(() => {
     // 用户取消删除

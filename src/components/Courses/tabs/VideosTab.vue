@@ -6,7 +6,14 @@
       <el-skeleton :rows="5" animated />
     </div>
     <div v-else-if="chapters.length === 0 || chapters.every(c => !c.videos || c.videos.length === 0)">
-      <el-empty description="暂无视频内容"></el-empty>
+      <!--<el-empty description="暂无视频内容"></el-empty>-->
+
+      <video
+        ref="videoPlayer"
+        src="../../../assets/mda-mkkdg610msrtghds.mp4"
+        controls autoplay muted loop width="100%" height="100%" type="video/mp4">
+        您的浏览器不支持 video 标签。 <!-- 浏览器不支持时显示的文本 -->
+      </video>
     </div>
     <div v-else>
       <div v-for="(chapter, index) in chapters" :key="index" class="chapter-block">
@@ -15,17 +22,15 @@
         </div>
 
         <div class="video-list">
-          <div
-              v-for="(video, videoIndex) in chapter.videos"
-              :key="videoIndex"
-              class="video-item"
-          >
+          <div v-for="(video, videoIndex) in chapter.videos" :key="videoIndex" class="video-item">
             <div class="video-card">
               <div class="video-thumbnail">
                 <img :src="video.thumbnail || defaultVideoThumbnail" :alt="video.title || '视频缩略图'" />
                 <div class="video-duration">{{ formatDuration(video.duration) }}</div>
                 <div class="video-play-icon" @click="playVideo(video)">
-                  <el-icon><VideoPlay /></el-icon>
+                  <el-icon>
+                    <VideoPlay />
+                  </el-icon>
                 </div>
               </div>
 
@@ -38,21 +43,13 @@
               </div>
 
               <div class="video-actions">
-                <el-button
-                    type="primary"
-                    size="small"
-                    @click="playVideo(video)"
-                >
+                <el-button type="primary" size="small" @click="playVideo(video)">
                   开始学习
                 </el-button>
 
-                <el-progress
-                    v-if="video.view_progress !== undefined && typeof video.view_progress === 'number'"
-                    :percentage="video.view_progress"
-                    :stroke-width="4"
-                    :format="videoProgressFormat"
-                    class="video-progress"
-                ></el-progress>
+                <el-progress v-if="video.view_progress !== undefined && typeof video.view_progress === 'number'"
+                  :percentage="video.view_progress" :stroke-width="4" :format="videoProgressFormat"
+                  class="video-progress"></el-progress>
               </div>
             </div>
           </div>
@@ -227,7 +224,8 @@ const videoProgressFormat = (percentage) => {
 .video-thumbnail {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* 16:9 比例 */
+  padding-bottom: 56.25%;
+  /* 16:9 比例 */
   background-color: #f0f2f5;
   overflow: hidden;
 }
@@ -276,7 +274,8 @@ const videoProgressFormat = (percentage) => {
 
 .video-info {
   padding: 15px;
-  flex-grow: 1; /* 占据剩余空间 */
+  flex-grow: 1;
+  /* 占据剩余空间 */
   display: flex;
   flex-direction: column;
 }
@@ -303,11 +302,13 @@ const videoProgressFormat = (percentage) => {
   color: #606266;
   line-height: 1.5;
   margin-bottom: 15px;
-  flex-grow: 1; /* 允许描述文本占据空间 */
+  flex-grow: 1;
+  /* 允许描述文本占据空间 */
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* 最多显示3行 */
+  -webkit-line-clamp: 3;
+  /* 最多显示3行 */
   -webkit-box-orient: vertical;
 }
 

@@ -14,16 +14,21 @@
       </div>
 
       <div class="resource-list">
-        <div
-            v-for="(resource, resIndex) in chapter.resources"
-            :key="resIndex"
-            class="resource-item"
-        >
+        <div v-for="(resource, resIndex) in chapter.resources" :key="resIndex" class="resource-item">
           <div class="resource-icon">
-            <el-icon v-if="resource.type === 'document'"><Document /></el-icon>
-            <el-icon v-else-if="resource.type === 'video'"><VideoPlay /></el-icon>
-            <el-icon v-else-if="resource.type === 'attachment' || !resource.type"><Paperclip /></el-icon>
-            <el-icon v-else><Files /></el-icon> </div>
+            <el-icon v-if="resource.type === 'document'">
+              <Document />
+            </el-icon>
+            <el-icon v-else-if="resource.type === 'video'">
+              <VideoPlay />
+            </el-icon>
+            <el-icon v-else-if="resource.type === 'attachment' || !resource.type">
+              <Paperclip />
+            </el-icon>
+            <el-icon v-else>
+              <Files />
+            </el-icon>
+          </div>
 
           <div class="resource-info">
             <div class="resource-name">
@@ -38,22 +43,14 @@
           </div>
 
           <div class="resource-actions">
-            <el-button
-                size="small"
-                :type="resource.type === 'video' ? 'primary' : 'success'"
-                @click="$emit('download-resource', resource)"
-                :disabled="!resource.allow_download && resource.type !== 'video'"
-            >
+            <el-button size="small" :type="resource.type === 'video' ? 'primary' : 'success'"
+              @click="downloadResource(resource)" :disabled="resource.allow!=='true'">
               {{ resource.type === 'video' ? '预览' : '下载' }}
             </el-button>
 
-            <el-progress
-                v-if="resource.type === 'video' && resource.view_progress !== undefined"
-                :percentage="resource.view_progress"
-                :stroke-width="4"
-                :format="videoProgressFormat"
-                class="video-progress"
-            ></el-progress>
+            <el-progress v-if="resource.type === 'video' && resource.view_progress !== undefined"
+              :percentage="resource.view_progress" :stroke-width="4" :format="videoProgressFormat"
+              class="video-progress"></el-progress>
           </div>
         </div>
       </div>
@@ -64,7 +61,8 @@
 <script setup>
 import { Document, VideoPlay, Paperclip, Files } from '@element-plus/icons-vue';
 import { ElTooltip, ElMessage, ElSkeleton, ElEmpty } from 'element-plus'; // 引入Element Plus组件
-
+import axios from 'axios';
+import { customFetch } from '@/api/customFetch';
 const props = defineProps({
   chapters: {
     type: Array,
@@ -85,6 +83,32 @@ const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+async function downloadResource(resource) {
+  const response = await customFetch(`/api/files?file_id=${resource.fileId}`);
+
+  const contentDisposition = response.headers.get('content-disposition');
+  let filename = 'downloaded-file';
+  if (contentDisposition) {
+    const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+    if (filenameMatch && filenameMatch[1]) {
+      filename = filenameMatch[1];
+    }
+  }
+  const blob = await response.blob();
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+}
+
 
 const formatDate = (dateString) => {
   if (!dateString) return '无日期';
@@ -148,9 +172,12 @@ const videoProgressFormat = (percentage) => {
   padding: 15px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  display: flex; /* Flexbox布局 */
-  align-items: center; /* 垂直居中对齐 */
-  gap: 15px; /* 元素间距 */
+  display: flex;
+  /* Flexbox布局 */
+  align-items: center;
+  /* 垂直居中对齐 */
+  gap: 15px;
+  /* 元素间距 */
 }
 
 .resource-item:hover {
@@ -159,32 +186,41 @@ const videoProgressFormat = (percentage) => {
 }
 
 .resource-icon {
-  font-size: 28px; /* 增大图标大小 */
-  color: #409eff; /* Element Plus 主色 */
-  flex-shrink: 0; /* 防止图标缩小 */
+  font-size: 28px;
+  /* 增大图标大小 */
+  color: #409eff;
+  /* Element Plus 主色 */
+  flex-shrink: 0;
+  /* 防止图标缩小 */
 }
 
 .resource-info {
   flex-grow: 1;
-  min-width: 0; /* 允许内容缩小 */
+  min-width: 0;
+  /* 允许内容缩小 */
 }
 
 .resource-name {
   font-weight: bold;
   margin-bottom: 5px;
   color: #303133;
-  word-break: break-all; /* 允许长单词换行 */
-  white-space: normal; /* 确保正常换行 */
+  word-break: break-all;
+  /* 允许长单词换行 */
+  white-space: normal;
+  /* 确保正常换行 */
   overflow: hidden;
-  text-overflow: ellipsis; /* 超出显示省略号 */
+  text-overflow: ellipsis;
+  /* 超出显示省略号 */
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* 限制两行 */
+  -webkit-line-clamp: 2;
+  /* 限制两行 */
   -webkit-box-orient: vertical;
 }
 
 .resource-meta {
   display: flex;
-  flex-wrap: wrap; /* 允许换行 */
+  flex-wrap: wrap;
+  /* 允许换行 */
   gap: 15px;
   color: #909399;
   font-size: 0.85rem;
@@ -195,7 +231,8 @@ const videoProgressFormat = (percentage) => {
   flex-direction: column;
   gap: 10px;
   align-items: flex-end;
-  flex-shrink: 0; /* 防止按钮缩小 */
+  flex-shrink: 0;
+  /* 防止按钮缩小 */
 }
 
 .video-progress {

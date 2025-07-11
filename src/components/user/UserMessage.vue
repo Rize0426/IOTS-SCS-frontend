@@ -176,6 +176,7 @@ export default {
           this.currentUserInfo = userInfo;
           this.uid = userInfo.uid;
           this.userAvatar = userInfo.avatar_url;
+          console.log(this.userAvatar);
           this.name = userInfo.name;
           this.role = translateRole(userInfo.role);
           this.major = userInfo.major;
@@ -304,8 +305,8 @@ export default {
         return
       }
       const updateFields = {
-        oldPassword: this.oldPassword,
-        newPassword: this.newPassword
+        old_password: this.oldPassword,
+        new_password: this.newPassword
       }
 
       try {

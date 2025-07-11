@@ -11,8 +11,8 @@ export function getNotes(courseId, lessonId) {
         url: '/api/notes',
         method: 'get',
         params: {
-            courseId: courseId,   // 驼峰命名，匹配后端
-            lessonId: lessonId    // 驼峰命名，匹配后端
+            course_id: courseId,
+            lesson_id: lessonId
         }
     });
 }

@@ -43,7 +43,7 @@ service.interceptors.response.use(
             });
             return Promise.reject(new Error('登录失效'));
         } else {
-            ElMessage.error(res.message || '请求失败');
+            /*ElMessage.success('请求成功');*/
             return Promise.reject(res);
         }
     },

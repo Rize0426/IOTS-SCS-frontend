@@ -14,21 +14,20 @@
     </div>
 
     <!-- 通知列表区域 -->
-    <div class="notification-list">
+    <div class="notification-list" id="notice-list">
       <el-empty v-if="filteredNotices.length === 0" description="暂无通知"></el-empty>
 
-      <div
+      <!--<div
           v-for="(notice, index) in filteredNotices"
           :key="notice.id"
           class="notice-item"
           @click="showDetail(notice)"
       >
         <div class="notice-content">
-          <div class="notice-title">{{ notice.title }}</div>
-          <div class="notice-time">{{ notice.time }}</div>
+          <div class="notice-title">新课程《前端框架》上线</div>
+          <div class="notice-time">2024/06/08 14:30</div>
         </div>
 
-        <!-- 动态显示的操作按钮 -->
         <div class="item-actions">
           <el-button
               v-if="editMode"
@@ -43,13 +42,21 @@
               size="small"
               @click.stop="confirmDelete(notice.id)"
           >删除</el-button>
-        </div>
-      </div>
+        </div></div>-->
+
+      <el-card class="notice-content" @click="showDetail(notice)">
+        <div class="notice-title">新课程《前端框架》上线</div>
+        <div class="notice-time">2024/06/08 14:30</div>
+      </el-card>
+      <el-card class="notice-content" @click="showDetail(notice)" v-if=new_notice>
+        <div class="notice-title">期末考试时间调整</div>
+        <div class="notice-time">{{ new Date().toLocaleString() }}</div>
+      </el-card>
     </div>
 
     <!-- 通知详情对话框 -->
-    <el-dialog v-model="detailDialogVisible" title="通知详情" width="500px">
-      <template v-if="selectedNotice">
+    <el-dialog v-model="detailDialogVisible" title="通知详情" width="500px" id="detail-notice">
+      <!--<template v-if="selectedNotice">
         <div class="detail-item">
           <span class="label">标题：</span>
           <span>{{ selectedNotice.title }}</span>
@@ -70,7 +77,11 @@
           <span class="label">发布时间：</span>
           <span>{{ selectedNotice.formattedTime }}</span>
         </div>
-      </template>
+      </template>-->
+      <p v-html="notice"></p>
+      <!--<p v-if="new_notice">期末考试时间调整<br>
+        原定于7月10日的期末考试调整为7月15日，请同学们做好准备<br>
+      </p>-->
     </el-dialog>
 
     <!-- 通知编辑对话框 -->
@@ -81,12 +92,7 @@
         </el-form-item>
 
         <el-form-item label="通知内容" prop="content">
-          <el-input
-              v-model="editingNotice.content"
-              type="textarea"
-              :rows="4"
-              placeholder="请输入通知内容"
-          ></el-input>
+          <el-input v-model="editingNotice.content" type="textarea" :rows="4" placeholder="请输入通知内容"></el-input>
         </el-form-item>
 
         <el-form-item label="通知人" prop="notifier">
@@ -101,12 +107,8 @@
         </el-form-item>
 
         <el-form-item label="通知日期" prop="date">
-          <el-date-picker
-              v-model="editingNotice.date"
-              type="datetime"
-              placeholder="选择通知发布日期"
-              format="YYYY-MM-DD HH:mm"
-          ></el-date-picker>
+          <el-date-picker v-model="editingNotice.date" type="datetime" placeholder="选择通知发布日期"
+            format="YYYY-MM-DD HH:mm"></el-date-picker>
         </el-form-item>
       </el-form>
 
@@ -122,10 +124,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from "axios";
-
+import { customFetch } from '@/api/customFetch';
 // 通知数据
 const notices = ref([
   {
@@ -145,6 +147,7 @@ const notices = ref([
     date: new Date('2024-06-08 14:30')
   }
 ])
+const notice = ref(null)
 
 // 控制各种模式的状态
 const writeMode = ref(false)    // 写入模式
@@ -180,7 +183,7 @@ const formRules = {
 }
 
 // 为表单添加引用
-const noticeForm = ref(null)
+const noticeForm = ref("")
 
 // 过滤后的通知列表（添加格式化时间）
 const filteredNotices = computed(() => {
@@ -199,6 +202,12 @@ const filteredNotices = computed(() => {
 async function loadNotice() {
   const res = await axios.get('/api/notices/list').then(res => res);
   notices.value = res.data;
+}
+async function getNotice() {
+  const response = await customFetch('/api/notice');
+  const data = await response.json();
+  notice.value = data.data.replace(/\n/g, '<br/>')
+  console.log(notice.value)
 }
 
 // 切换写入模式（修复：确保打开写入对话框并重置编辑对象）
@@ -259,7 +268,7 @@ const openEditDialog = (currentNotice) => {
   editMode.value = true;
   writeDialogVisible.value = true;
 };
-
+const new_notice = ref(false)
 // 提交通知（新增或编辑）
 const submitNotice = async () => {
   if (!noticeForm.value) return
@@ -332,6 +341,13 @@ const showDetail = (notice) => {
   selectedNotice.value = notice
   detailDialogVisible.value = true
 }
+onMounted(async () => {
+  await getNotice()
+  setTimeout(() => {
+    new_notice.value = true
+    console.log("123456789")
+  }, 1000 * 30)
+})
 </script>
 
 <style scoped>
@@ -341,9 +357,12 @@ const showDetail = (notice) => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  width: 100%; /* 填满父容器宽度 */
-  box-sizing: border-box; /* 让padding和border包含在总宽度内 */
-  max-width: 600px; /* 限制最大宽度为600px */
+  width: 100%;
+  /* 填满父容器宽度 */
+  box-sizing: border-box;
+  /* 让padding和border包含在总宽度内 */
+  max-width: 600px;
+  /* 限制最大宽度为600px */
 }
 
 .notification-header {
@@ -388,12 +407,15 @@ const showDetail = (notice) => {
   border-radius: 6px;
   border-left: 4px solid #409EFF;
   width: 100%;
-  cursor: pointer; /* 添加鼠标指针样式，表明可点击 */
-  transition: background-color 0.2s; /* 添加过渡效果 */
+  cursor: pointer;
+  /* 添加鼠标指针样式，表明可点击 */
+  transition: background-color 0.2s;
+  /* 添加过渡效果 */
 }
 
 .notice-item:hover {
-  background-color: #f0f0f0; /* 鼠标悬停时的背景色 */
+  background-color: #f0f0f0;
+  /* 鼠标悬停时的背景色 */
 }
 
 .notice-content {

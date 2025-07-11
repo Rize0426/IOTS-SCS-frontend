@@ -58,7 +58,7 @@ const router = createRouter({
         {
             path: '/note',
             name: 'note',
-            component: () => import('@/components/note/NoteView.vue'),
+            component: () => import('@/components/note/note.vue'),
             meta: { title: '笔记', requiresAuth: true } // 如果需要登录才能访问
         },
         {
