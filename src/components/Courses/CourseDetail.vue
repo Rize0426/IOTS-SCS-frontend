@@ -801,19 +801,42 @@ export default {
       }
     };
 
-    // 监听课程ID变化，重新加载数据
-    watch(courseId, (newCourseId) => {
-      if (newCourseId) {
-        loadCourseDetail();
-        loadChapters();
+    const loadAllData = async () => {
+      loading.value = true; // 开始加载时设置为 true
+      try {
+        await Promise.all([
+          loadCourseDetail(),
+          loadChapters(),
+          loadChaptersVideo(), // 即使VideosTab不直接使用，也确保数据被加载
+          loadAssignments(),
+          loadExams(),
+          loadDiscussions(),
+          loadRecommendedCourses()
+        ]);
+        console.log("所有数据加载完成！");
+      } catch (error) {
+        ElMessage.error('加载课程数据失败，请重试');
+        console.error('加载数据失败:', error);
+      } finally {
+        loading.value = false; // 所有数据加载完成后设置为 false
       }
-    });
+    };
+
+    // 监听课程ID变化，重新加载数据
+    watch(() => route.params.courseId, (newCourseId) => {
+      if(newCourseId && newCourseId !== courseId.value) {
+        courseId.value = newCourseId;
+        loadAllData()
+      }
+    },
+        {immediate: true}
+    );
 
     // 组件挂载时加载数据
     onMounted(() => {
-      loadCourseDetail();
-      loadChapters();
-      loadChaptersVideo();
+      if(courseId.value) {
+        loadAllData();
+      }
     });
 
     return {

@@ -1,14 +1,11 @@
 <template>
   <div class="page-container">
-    <!-- 左半部分保持不变 -->
     <div class="left-sidebar">
       <UserCenter />
       <FunctionButtons />
     </div>
 
-    <!-- 右半部分重构为个人信息页面 -->
     <div class="right-column">
-      <!-- 个人信息头部：头像和上传按钮 -->
       <div class="profile-header">
         <div class="avatar-container">
           <img :src="userAvatar" alt="个人头像" class="avatar">
@@ -25,7 +22,6 @@
         </div>
       </div>
 
-      <!-- 个人信息详情列表 -->
       <div class="profile-details">
         <div class="detail-item">
           <span class="detail-label">姓名：</span>
@@ -94,7 +90,6 @@
       </div>
     </div>
 
-    <!-- 修改密码弹窗 -->
     <div v-if="showPasswordModal" class="modal-overlay" @click="showPasswordModal = false">
       <div class="password-modal" @click.stop>
         <h3>修改密码</h3>
@@ -124,8 +119,7 @@
 import UserCenter from '@/components/user/UserCenter.vue'
 import FunctionButtons from '@/components/tools/FunctionButtons.vue'
 import defaultAvatar from '@/assets/images/个人信息头像.png';
-import {getUserInfo, updatePassword, updateAvatar , updateUserInfo} from "@/api/auth.js";
-import { uploadFile } from "@/api/file.js";
+import {getUserInfo, updatePassword, updateAvatar, updateUserInfo, getAvatar} from "@/api/auth.js";
 
 function translateRole(role) {
   switch (role) {
@@ -144,7 +138,8 @@ export default {
   data() {
     return {
       // 用户信息数据
-      userAvatar: defaultAvatar, // 默认头像
+      uid: '',
+      userAvatar:  defaultAvatar, // 默认头像
       name: '当前用户',
       role: '学生',
       university: '某某大学',
@@ -177,8 +172,10 @@ export default {
         const res = await getUserInfo();
         if (res.code === 200 && res.data) {
           const userInfo = res.data;
+          console.log(userInfo);
           this.currentUserInfo = userInfo;
-          this.userAvatar = userInfo.avatar_url || defaultAvatar;
+          this.uid = userInfo.uid;
+          this.userAvatar = userInfo.avatar_url;
           this.name = userInfo.name;
           this.role = translateRole(userInfo.role);
           this.major = userInfo.major;
@@ -252,33 +249,48 @@ export default {
 
     // 处理头像上传
     async handleAvatarUpload(event) {
-      const file = event.target.files[0]
-      if (!file) return
+      const file = event.target.files[0];
+      if (!file) return;
 
-      // 文件类型验证
+      // 类型和大小校验
       if (!file.type.match('image.*')) {
-        alert('请上传图片文件')
-        return
+        alert('请上传图片文件');
+        return;
       }
-
-      // 文件大小验证
       if (file.size > 2 * 1024 * 1024) {
-        alert('头像图片不能超过2MB')
-        return
+        alert('头像不能超过2MB');
+        return;
       }
 
-      // 读取文件并预览
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        this.userAvatar = e.target.result
+      try {
+        // 上传图片（调用 /api/files）
+        const avatarRes = await updateAvatar(file);
+        if (avatarRes.code === 200 && avatarRes.data ) {
+          const newAvatarUrl = `/api/users/${this.uid}/avatar`;
+
+          // 发送 PUT /api/users/{uid} 更新头像字段
+          const updateRes = await updateUserInfo({
+            avatarUrl: newAvatarUrl  // 确保后端支持这个字段
+          });
+
+          if (updateRes.code === 200) {
+            // 更新本地头像 URL 为后端头像接口
+            this.userAvatar = `/api/users/${this.uid}/avatar`;
+            if (this.currentUserInfo) {
+              this.currentUserInfo.avatar_url = this.userAvatar;
+              localStorage.setItem('userInfo', JSON.stringify(this.currentUserInfo));
+            }
+            alert('头像上传成功');
+          } else {
+            alert('头像文件上传成功，但更新用户信息失败');
+          }
+        } else {
+          alert('头像上传失败: ' + (avatarRes.msg || '未知错误'));
+        }
+      } catch (error) {
+        console.error('头像上传异常:', error);
+        alert('头像上传出错');
       }
-      reader.readAsDataURL(file)
-
-      const avatarFile = new FormData();
-      avatarFile.append("avatar", file);
-
-      // 调用API上传头像到服务器
-      const avatarRes = await updateAvatar(avatarFile);
     },
 
     // 修改密码

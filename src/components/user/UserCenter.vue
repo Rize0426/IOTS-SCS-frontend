@@ -30,7 +30,6 @@ function translateRole(role) {
   }
 }
 
-
 const userStore = useUserStore();
 
 const userInfo = computed(() => {

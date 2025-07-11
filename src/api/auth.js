@@ -83,10 +83,13 @@ function getUserUid() {
 }
 
 export function updateAvatar(param) {
+ const formData = new FormData();
+ formData.append('avatar', param);
+
  return request({
-     url: `/users/${getUserUid()}/avatar`,
-     method:'post',
-     data: param,
+     url: `/api/users/${getUserUid()}/avatar`,
+     method: 'post',
+     data: formData,
      headers: {
          "Content-Type": "multipart/form-data"
      }
@@ -95,4 +98,12 @@ export function updateAvatar(param) {
          return res;
      }
  });
+}
+
+export function getAvatar(param) {
+    return request({
+        url: `/api/users/${getUserUid()}/avatar`,
+        method: 'get',
+        responseType: 'blob'
+    })
 }

@@ -8,7 +8,7 @@ import { getStorage } from '@/utils/localStorage.js';
 const service = axios.create({
     baseURL: '/api', // 后端地址（后续替换）
     timeout: 10000,
-    withCredentials: true
+    withCredentials: true,
 });
 
 // 请求拦截器：携带token
