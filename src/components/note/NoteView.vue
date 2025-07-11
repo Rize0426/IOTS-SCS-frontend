@@ -114,6 +114,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNotes, createNote, getNoteDetail, updateNote, deleteNote } from '@/api/note';
 import NoteForm from '@/components/note/NoteForm.vue';
 import NoteDetail from '@/components/note/NoteDetail.vue';
+import {studentCourseApi} from "@/api/course.js";
+import { watch } from 'vue';
 
 // 状态定义
 const loading = ref(false);
@@ -152,12 +154,20 @@ const filteredLessonOptions = computed(() => {
 });
 
 // 获取笔记列表
-const fetchNotes = async () => {
+const fetchNotes = async (courseId, lessonId) => {
   loading.value = true;
   try {
-    const response = await getNotes(filterParams.courseId, filterParams.lessonId);
-    noteList.value = response.data || [];
-    total.value = noteList.value.length; // 假设后端返回了总数，实际中可能需要从响应中获取
+    // 修改为API调用，添加分页参数
+    const response = await getNotes({
+      courseId: filterParams.courseId,
+      lessonId: filterParams.lessonId,
+      page: currentPage.value,
+      pageSize: pageSize.value
+    }, lessonId);
+
+    // 根据API返回格式可能需要调整
+    noteList.value = response.data.list || response.data || [];
+    total.value = response.data.total || noteList.value.length; // 使用API返回的总数
   } catch (error) {
     console.error('获取笔记列表失败:', error);
     ElMessage.error('获取笔记列表失败，请稍后重试');
@@ -166,34 +176,43 @@ const fetchNotes = async () => {
   }
 };
 
-// 获取课程和课时选项
+
+// 获取课程列表
 const fetchCourseOptions = async () => {
   try {
-    // 这里假设有一个API获取课程列表，实际中需要添加对应的API调用
-    // 为演示，使用模拟数据
-    courseOptions.value = [
-      {
-        id: 'course1',
-        name: 'Web前端开发',
-        lessons: [
-          { id: 'lesson1', name: 'HTML & CSS' },
-          { id: 'lesson2', name: 'JavaScript基础' }
-        ]
-      },
-      {
-        id: 'course2',
-        name: 'Java编程',
-        lessons: [
-          { id: 'lesson3', name: 'JavaSE基础' },
-          { id: 'lesson4', name: 'Spring框架' }
-        ]
-      }
-    ];
+    loading.value = true;
+    // 调用API获取课程列表
+    const response = await studentCourseApi.getMyCourses('all');
+    // 假设API返回的数据格式为 {code: 200, data: [{id: 'course1', name: '课程1', lessons: [...]}]}
+    courseOptions.value = response.data || [];
   } catch (error) {
     console.error('获取课程列表失败:', error);
     ElMessage.error('获取课程列表失败，请稍后重试');
+  } finally {
+    loading.value = false;
   }
 };
+
+// 监听课程ID变化，获取对应课时列表
+watch(() => filterParams.courseId, async (newCourseId) => {
+  if (newCourseId) {
+    try {
+      loading.value = true;
+      // 调用API获取课程的课时列表
+      const response = await studentCourseApi.getLessons(newCourseId);
+      // 假设API返回的数据格式为 {code: 200, data: [{id: 'lesson1', name: '课时1'}, ...]}
+      lessonOptions.value = response.data || [];
+    } catch (error) {
+      console.error('获取课时列表失败:', error);
+      ElMessage.error('获取课时列表失败，请稍后重试');
+      lessonOptions.value = [];
+    } finally {
+      loading.value = false;
+    }
+  } else {
+    lessonOptions.value = [];
+  }
+});
 
 // 搜索
 const handleSearch = () => {
@@ -211,6 +230,7 @@ const resetFilter = () => {
 // 分页处理
 const handleSizeChange = (size) => {
   pageSize.value = size;
+  currentPage.value = 1; // 重置到第一页
   fetchNotes();
 };
 
@@ -229,9 +249,19 @@ const handleAdd = () => {
 };
 
 // 查看笔记详情
-const handleView = (row) => {
-  noteDetail.value = row;
-  detailVisible.value = true;
+const handleView = async (row) => {
+  try {
+    loading.value = true;
+    // 调用API获取笔记详情
+    const response = await getNoteDetail(row.id);
+    noteDetail.value = response.data || {};
+    detailVisible.value = true;
+  } catch (error) {
+    console.error('获取笔记详情失败:', error);
+    ElMessage.error('获取笔记详情失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
 };
 
 // 编辑笔记
@@ -253,7 +283,7 @@ const handleDelete = (row) => {
     try {
       await deleteNote(row.id);
       ElMessage.success('删除成功');
-      fetchNotes();
+      await fetchNotes();
     } catch (error) {
       console.error('删除笔记失败:', error);
       ElMessage.error('删除笔记失败，请稍后重试');
@@ -274,7 +304,7 @@ const handleSubmit = async (formValues) => {
       ElMessage.success('更新成功');
     }
     dialogVisible.value = false;
-    fetchNotes();
+    await fetchNotes();
   } catch (error) {
     console.error(`${dialogType.value === 'add' ? '创建' : '更新'}笔记失败:`, error);
     ElMessage.error(`${dialogType.value === 'add' ? '创建' : '更新'}笔记失败，请稍后重试`);

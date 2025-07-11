@@ -32,17 +32,19 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
-import { ElMessageBox } from 'element-plus';
+import { defineProps, defineEmits, ref, onMounted } from 'vue';
+import {ElMessage, ElMessageBox} from 'element-plus';
+import { getNoteDetail } from '@/api/note';
 
 const props = defineProps({
-  noteData: {
-    type: Object,
+  noteId: {
+    type: String,
     required: true
   }
 });
 
 const emit = defineEmits(['edit', 'delete', 'close']);
+const noteData = ref({});
 
 // 格式化日期时间
 const formatDateTime = (dateTimeStr) => {
@@ -50,33 +52,24 @@ const formatDateTime = (dateTimeStr) => {
   const date = new Date(dateTimeStr);
   return date.toLocaleString();
 };
+
+// 获取笔记详情
+const fetchNoteDetail = async () => {
+  try {
+    const response = await getNoteDetail(props.noteId);
+    noteData.value = response.data || {};
+  } catch (error) {
+    console.error('获取笔记详情失败:', error);
+    ElMessage.error('获取笔记详情失败，请稍后重试');
+  }
+};
+
+// 组件挂载时获取笔记详情
+onMounted(() => {
+  fetchNoteDetail();
+});
+
+defineExpose({
+  refresh: fetchNoteDetail
+});
 </script>
-
-<style scoped>
-.note-detail {
-  padding: 10px;
-}
-
-.note-info {
-  margin-bottom: 20px;
-}
-
-.note-content {
-  margin: 20px 0;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
-}
-
-.content-text {
-  white-space: pre-wrap;
-  line-height: 1.6;
-  color: #606266;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-</style>

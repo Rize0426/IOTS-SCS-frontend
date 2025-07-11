@@ -53,6 +53,7 @@
 <script setup>
 import { ref, reactive, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import { createNote, updateNote } from '@/api/note';
 
 const props = defineProps({
   formData: {
