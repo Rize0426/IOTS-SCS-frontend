@@ -35,9 +35,19 @@ const functionList = [
     path: '/courseCenter'
   },
   {
+    label: '消息管理',
+    type: 'danger',
+    path: '/messages'
+  },
+  {
     label: '学习中心',
     type: 'warning',
     path: '/evaluation'
+  },
+  {
+    label: '评价中心',
+    type: 'success',
+    path: '/pingjia'
   },
   {
     label: '知识库',
