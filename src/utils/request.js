@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores/auth.js'; // 引入Pinia用户状态
 const service = axios.create({
     baseURL: 'http://localhost:8080', // 后端地址（后续替换）
     timeout: 10000,
-    withCredentials: true
+    withCredentials: true,
 });
 
 // 请求拦截器：携带token
@@ -42,7 +42,6 @@ service.interceptors.response.use(
             });
             return Promise.reject(new Error('登录失效'));
         } else {
-            ElMessage.error(res.msg || '请求失败');
             return Promise.reject(res);
         }
     },

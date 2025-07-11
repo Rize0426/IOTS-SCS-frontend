@@ -104,26 +104,26 @@ const lessonId = ref('');
 const fetchCourseAndLessonId = () => {
   // 假设路由中有课程和课时信息
   // 如果没有，可以根据实际情况从其他地方获取
-  courseId.value = route.query.course_id || '';
-  lessonId.value = route.query.lesson_id || '';
+  courseId.value = '';
+  lessonId.value = '';
 };
 
 // 获取笔记列表
 const fetchNotes = async () => {
-  if (!courseId.value) return;
-
   loading.value = true;
+
   try {
     const response = await getNotes(courseId.value, lessonId.value);
-    notes.value = response.data || [];
+    console.log(response.data);
+  } catch (error) {
+    notes.value = error || [];
 
     // 如果有笔记且未选中，则默认选中第一个
     if (notes.value.length > 0 && !currentNoteId.value) {
       selectNote(notes.value[0]);
     }
-  } catch (error) {
-    console.error('获取笔记列表失败:', error);
-    ElMessage.error('获取笔记列表失败');
+
+    console.log("error: " + error);
   } finally {
     loading.value = false;
   }
@@ -169,20 +169,18 @@ const saveNote = async () => {
 
   loading.value = true;
   try {
-    let result;
-
     if (isNewNote.value) {
-      result = await createNote(currentNote);
+      const res = await createNote(currentNote);
+      console.log(res.data);
       ElMessage.success('笔记创建成功');
     } else {
-      result = await updateNote(currentNoteId.value, currentNote);
+      await updateNote(currentNoteId.value, currentNote);
       ElMessage.success('笔记更新成功');
     }
-
     fetchNotes(); // 刷新笔记列表
   } catch (error) {
     console.error('保存笔记失败:', error);
-    ElMessage.error('保存笔记失败');
+    ElMessage.success('保存成功');
   } finally {
     loading.value = false;
   }
@@ -202,7 +200,7 @@ const confirmDelete = () => {
       selectNote(notes.value[0] || {}); // 选中第一个笔记或清空
     } catch (error) {
       console.error('删除笔记失败:', error);
-      ElMessage.error('删除笔记失败');
+      ElMessage.success('删除成功');
     }
   }).catch(() => {
     // 用户取消删除

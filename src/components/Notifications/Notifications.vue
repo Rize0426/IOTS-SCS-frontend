@@ -90,6 +90,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import axios from "axios";
 
 // 通知数据
 const notices = ref([
@@ -155,6 +156,11 @@ const filteredNotices = computed(() => {
     })
   }))
 })
+
+async function loadNotice() {
+  const res = await axios.get('/api/notices/list').then(res => res);
+  notices.value = res.data;
+}
 
 // 切换写入模式（修复：确保打开写入对话框并重置编辑对象）
 const toggleWriteMode = () => {
