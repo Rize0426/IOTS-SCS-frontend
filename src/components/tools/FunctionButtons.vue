@@ -47,7 +47,7 @@ const functionList = [
   {
     label: '评价中心',
     type: 'success',
-    path: '/pingjia'
+    path: '/courses-list'
   },
   {
     label: '知识库',
