@@ -260,7 +260,7 @@ const router = createRouter({
             meta: { title: '评价表单', requiresAuth: true }
         },
         {
-            path: '/courseEvaluation/:courseId',
+            path: '/courseEvaluation/:id',
             name: 'EvaluationList',
             component: () => import('@/components/evaluation/Evaluation.vue'),
             meta: { title: '评价列表', requiresAuth: true }

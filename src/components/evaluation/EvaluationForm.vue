@@ -133,7 +133,7 @@ const showCourseList = async () => {
   try {
     const res = await studentCourseApi.getMyCourses('completed');
     if (res.data && res.data.length > 0) {
-      await router.push('/courses'); // 跳转到课程列表页选择课程
+      await router.push('/courses-list'); // 跳转到课程列表页选择课程
     } else {
       ElMessage.warning('您还没有完成任何课程，无法进行评价');
     }
@@ -177,13 +177,13 @@ const submitForm = async () => {
       loading.value = true;
       try {
         const submitData = {
-          courseId: courseId.value, // 关键：传递有效的courseId
-          userId: userId.value, // 关键：传递有效的userId
-          contentEvaluation: form.contentEvaluation,
-          serviceEvaluation: form.serviceEvaluation,
-          attitudeEvaluation: form.attitudeEvaluation,
-          effectEvaluation: form.effectEvaluation,
-          evaluationContent: form.evaluationContent
+          course_id: courseId.value, // 关键：传递有效的courseId
+          user_id: userId.value, // 关键：传递有效的userId
+          content_evaluation: form.contentEvaluation,
+          service_evaluation: form.serviceEvaluation,
+          attitude_evaluation: form.attitudeEvaluation,
+          effect_evaluation: form.effectEvaluation,
+          evaluation_content: form.evaluationContent
         };
         await submitEvaluation(submitData);
         ElMessage.success('评价提交成功！');

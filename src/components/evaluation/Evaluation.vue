@@ -1,30 +1,57 @@
 <template>
   <div class="evaluation-list-container">
-    <!-- 无论是否有评价，都显示课程基础信息 -->
     <div class="course-header">
-      <h2>{{ courseInfo.courseName }} - 课程评价</h2>
+      <h2>{{ courseName }} - 课程评价</h2>
       <div class="course-info">
-        <span>授课教师：{{ courseInfo.teacher }}</span>
+        <span>授课教师：{{ teacher }}</span>
         <span>平均评分：{{ averageScore.toFixed(1) }}分</span>
       </div>
     </div>
-
+    
     <el-empty v-if="details.length === 0" description="暂无评价" />
-
     <div v-else class="evaluation-list">
-      <!-- 评价列表内容不变 -->
       <el-card
-          v-for="item in details"
-          :key="item.evaluationId"
+          v-for="(item, index) in details" :key="index"
           class="evaluation-item"
           shadow="hover"
       >
-        <!-- 原有内容 -->
-      </el-card>
-    </div>
+        <template #header>
+          <div class="card-header">
+            <span>评价ID：{{ item.evaluation_id }}</span>
+            <el-tag type="success">匿名评价</el-tag>
+          </div>
+        </template>
 
-    <div class="back-button">
-      <el-button @click="goBack">返回课程列表</el-button>
+        <div class="score-info">
+          <el-rate
+              v-model="item.content_evaluation"
+              disabled
+              text-color="#ff9900"
+              score-template="{value}"
+          />
+          <el-rate
+              v-model="item.service_evaluation"
+              disabled
+              text-color="#ff9900"
+              score-template="{value}"
+          />
+          <el-rate
+              v-model="item.attitude_evaluation"
+              disabled
+              text-color="#ff9900"
+              score-template="{value}"
+          />
+          <el-rate
+              v-model="item.effect_evaluation"
+              disabled
+              text-color="#ff9900"
+              score-template="{value}"
+          />
+        </div>
+
+        <p class="content">{{ item.evaluation_content }}</p>
+        <p class="time">{{ formatTime(item.create_time) }}</p>
+      </el-card>
     </div>
   </div>
 </template>
@@ -47,15 +74,16 @@ const courseId = computed(() => Number(route.params.id));
 const details = ref([]);
 const courseInfo = ref({ courseName: '', teacher: '' }); // 初始化课程信息
 const averageScore = ref(0);
-
+const courseName = ref('');
+const teacher = ref('');
 // 获取课程基础信息（关键修改点）
 const fetchCourseBaseInfo = async () => {
   try {
     const res = await studentCourseApi.getCourseDetail(courseId.value); // 调用课程详情接口
     if (res.code === 200) {
       courseInfo.value = {
-        courseName: res.data.courseName,
-        teacher: res.data.teacher // 假设接口返回字段为teacher（根据实际接口调整）
+        courseName: res.data.course_name,
+        teacher: res.data.teacher_name // 假设接口返回字段为teacher（根据实际接口调整）
       };
     } else {
       throw new Error(res.message || '获取课程信息失败');
@@ -77,8 +105,10 @@ const fetchEvaluationDetails = async () => {
 
     // 计算平均分（仅当有评价时）
     if (details.value.length > 0) {
+      courseName.value = details.value[0].course_name;
+      teacher.value = details.value[0].teacher;
       const totalScore = details.value.reduce(
-          (sum, item) => sum + item.contentEvaluation + item.serviceEvaluation + item.attitudeEvaluation + item.effectEvaluation,
+          (sum, item) => sum + item.content_evaluation + item.service_evaluation + item.attitude_evaluation + item.effect_evaluation,
           0
       );
       averageScore.value = totalScore / (details.value.length * 4);
@@ -92,7 +122,9 @@ const fetchEvaluationDetails = async () => {
 const goBack = () => {
   router.push('/courses-list');
 };
-
+const formatTime = (timeStr) => {
+  return dayjs(timeStr).format('YYYY-MM-DD HH:mm:ss');
+};
 // 组件挂载时同时获取课程信息和评价详情
 onMounted(() => {
   fetchCourseBaseInfo(); // 关键：优先获取课程基础信息
@@ -165,5 +197,8 @@ onMounted(() => {
 
 .back-button .el-button:hover {
   background: #ecf5ff; /* 悬停背景色 */
+}
+.content{
+  word-break: break-all;
 }
 </style>
