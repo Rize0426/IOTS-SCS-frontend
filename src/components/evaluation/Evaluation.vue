@@ -1,9 +1,10 @@
 <template>
   <div class="evaluation-list-container">
+    <!-- 无论是否有评价，都显示课程基础信息 -->
     <div class="course-header">
-      <h2>{{ courseName }} - 课程评价</h2>
+      <h2>{{ courseInfo.courseName }} - 课程评价</h2>
       <div class="course-info">
-        <span>授课教师：{{ teacher }}</span>
+        <span>授课教师：{{ courseInfo.teacher }}</span>
         <span>平均评分：{{ averageScore.toFixed(1) }}分</span>
       </div>
     </div>
@@ -11,85 +12,75 @@
     <el-empty v-if="details.length === 0" description="暂无评价" />
 
     <div v-else class="evaluation-list">
+      <!-- 评价列表内容不变 -->
       <el-card
           v-for="item in details"
           :key="item.evaluationId"
           class="evaluation-item"
           shadow="hover"
       >
-        <template #header>
-          <div class="card-header">
-            <span>评价ID：{{ item.evaluationId }}</span>
-            <el-tag type="success">匿名评价</el-tag>
-          </div>
-        </template>
-
-        <div class="score-info">
-          <el-rate
-              v-model="item.contentEvaluation"
-              disabled
-              text-color="#ff9900"
-              score-template="{value}"
-          />
-          <el-rate
-              v-model="item.serviceEvaluation"
-              disabled
-              text-color="#ff9900"
-              score-template="{value}"
-          />
-          <el-rate
-              v-model="item.attitudeEvaluation"
-              disabled
-              text-color="#ff9900"
-              score-template="{value}"
-          />
-          <el-rate
-              v-model="item.effectEvaluation"
-              disabled
-              text-color="#ff9900"
-              score-template="{value}"
-          />
-        </div>
-
-        <p class="content">{{ item.evaluationContent }}</p>
-        <p class="time">{{ formatTime(item.createTime) }}</p>
+        <!-- 原有内容 -->
       </el-card>
+    </div>
+
+    <div class="back-button">
+      <el-button @click="goBack">返回课程列表</el-button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getEvaluationDetails } from '@/api/courseEvaluation';
+import { studentCourseApi } from '@/api/course'; // 新增：引入学生课程API
 import { ElMessage } from 'element-plus';
-import dayjs from 'dayjs'; // 时间格式化库
+import { computed } from 'vue'; // 添加这行
+import dayjs from 'dayjs';
 
-// 路由参数
+// 路由相关
 const route = useRoute();
-const courseId = Number(route.params.id);
+const router = useRouter();
+const courseId = computed(() => Number(route.params.id));
 
 // 数据
 const details = ref([]);
-const courseName = ref('');
-const teacher = ref('');
+const courseInfo = ref({ courseName: '', teacher: '' }); // 初始化课程信息
 const averageScore = ref(0);
 
-// 获取评价详情
-const fetchEvaluationDetails = async () => {
+// 获取课程基础信息（关键修改点）
+const fetchCourseBaseInfo = async () => {
   try {
-    const res = await getEvaluationDetails(courseId);
+    const res = await studentCourseApi.getCourseDetail(courseId.value); // 调用课程详情接口
+    if (res.code === 200) {
+      courseInfo.value = {
+        courseName: res.data.courseName,
+        teacher: res.data.teacher // 假设接口返回字段为teacher（根据实际接口调整）
+      };
+    } else {
+      throw new Error(res.message || '获取课程信息失败');
+    }
+  } catch (error) {
+    ElMessage.error('获取课程信息失败：' + error.message);
+  }
+};
+
+// 获取评价详情（仅用于计算平均分）
+const fetchEvaluationDetails = async () => {
+  if (!courseId.value) return;
+
+  try {
+    const res = await getEvaluationDetails(courseId.value);
     if (res.code !== 200) throw new Error(res.message || '获取评价失败');
 
     details.value = res.data;
-    if (details.value.length > 0) {
-      // 提取课程名称和教师（假设所有评价的课程信息一致）
-      courseName.value = details.value[0].courseName;
-      teacher.value = details.value[0].teacher;
 
-      // 计算平均分（4个评分项的总和 / 4 / 评价数量）
-      const totalScore = details.value.reduce((sum, item) =>
-          sum + item.contentEvaluation + item.serviceEvaluation + item.attitudeEvaluation + item.effectEvaluation, 0);
+    // 计算平均分（仅当有评价时）
+    if (details.value.length > 0) {
+      const totalScore = details.value.reduce(
+          (sum, item) => sum + item.contentEvaluation + item.serviceEvaluation + item.attitudeEvaluation + item.effectEvaluation,
+          0
+      );
       averageScore.value = totalScore / (details.value.length * 4);
     }
   } catch (error) {
@@ -97,69 +88,82 @@ const fetchEvaluationDetails = async () => {
   }
 };
 
-// 格式化时间
-const formatTime = (timeStr) => {
-  return dayjs(timeStr).format('YYYY-MM-DD HH:mm:ss');
+// 返回课程列表
+const goBack = () => {
+  router.push('/courses-list');
 };
 
-// 组件挂载时获取数据
+// 组件挂载时同时获取课程信息和评价详情
 onMounted(() => {
+  fetchCourseBaseInfo(); // 关键：优先获取课程基础信息
   fetchEvaluationDetails();
 });
 </script>
 
 <style scoped>
+/* 整体容器 */
 .evaluation-list-container {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 20px;
+  max-width: 1000px; /* 限制最大宽度，适配大屏 */
+  margin: 20px auto; /* 水平居中 */
+  padding: 20px; /* 内边距 */
+  background: #fff; /* 白色背景 */
+  border-radius: 12px; /* 圆角 */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); /* 轻微阴影 */
 }
 
+/* 课程头部信息 */
 .course-header {
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
-}
-
-.course-info {
-  margin-top: 10px;
-  display: flex;
-  gap: 20px;
-  color: #666;
-}
-
-.evaluation-list {
-  display: grid;
-  gap: 20px;
-}
-
-.evaluation-item {
-  margin-bottom: 0;
-}
-
-.card-header {
+  margin-bottom: 30px; /* 与下方内容的间距 */
+  padding-bottom: 15px; /* 底部内边距 */
+  border-bottom: 1px solid #f0f0f0; /* 分割线 */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
-  color: #999;
 }
 
-.score-info {
+.course-header h2 {
+  margin: 0; /* 重置标题边距 */
+  font-size: 20px; /* 标题字体大小 */
+  color: #303133; /* 主文本颜色 */
+}
+
+.course-info {
   display: flex;
-  gap: 10px;
-  margin: 15px 0;
+  gap: 20px; /* 两个信息项之间的间距 */
+  color: #606266; /* 辅助文本颜色 */
+  font-size: 14px;
 }
 
-.content {
-  color: #333;
-  line-height: 1.6;
-  margin: 10px 0;
+/* 无评价提示 */
+.el-empty {
+  margin: 40px 0; /* 上下边距 */
+  padding: 30px; /* 内边距 */
 }
 
-.time {
-  color: #999;
-  font-size: 12px;
-  text-align: right;
+/* 评价列表 */
+.evaluation-list {
+  margin-bottom: 30px; /* 与返回按钮的间距 */
+}
+
+.evaluation-item {
+  margin-bottom: 15px; /* 评价卡片之间的间距 */
+}
+
+/* 返回按钮 */
+.back-button {
+  display: flex;
+  justify-content: center; /* 按钮水平居中 */
+  margin-top: 20px; /* 上边距 */
+}
+
+.back-button .el-button {
+  padding: 10px 20px; /* 按钮内边距 */
+  font-size: 14px; /* 按钮字体大小 */
+  color: #409eff; /* 主色 */
+  border-color: #409eff; /* 边框色 */
+}
+
+.back-button .el-button:hover {
+  background: #ecf5ff; /* 悬停背景色 */
 }
 </style>

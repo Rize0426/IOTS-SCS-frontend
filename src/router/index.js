@@ -67,11 +67,23 @@ const router = createRouter({
             meta: { title: '学习讨论区详情', requiresAuth: true }
         },
         {
-            path: '/pingjia',
-            name: 'PinJia',
+            path: '/course-evaluation/:courseId',
+            name: 'EvaluationForm',
+            component: () => import('@/components/evaluation/EvaluationForm.vue'),
+            meta: { title: '评价表单', requiresAuth: true }
+        },
+        {
+            path: '/courseEvaluation/:courseId',
+            name: 'EvaluationList',
             component: () => import('@/components/evaluation/Evaluation.vue'),
-            meta: { title: '评价中心', requiresAuth: true }
-        }
+            meta: { title: '评价列表', requiresAuth: true }
+        },
+        {
+            path: '/courses-list',
+            name: 'CourseList',
+            component: () => import('@/components/evaluation/CourseList.vue'),
+            meta: { title: '课程列表', requiresAuth: true }
+        },
     ]
 });
 

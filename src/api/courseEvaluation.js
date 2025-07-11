@@ -1,5 +1,5 @@
-// src/api/evaluation.js
-import request from '@/utils/request.js'; // 导入公共请求实例（注意.js后缀）
+// src/api/courseEvaluation.js
+import request from '@/utils/request.js';
 
 /**
  * 提交课程评价
@@ -34,12 +34,22 @@ export function getEvaluationList(courseId) {
 
 /**
  * 获取某课程的评价详情（含课程名称和教师，用于前端展示）
- * @param {number} courseId 课程ID
+ * @param {number} courseId 课程ID（需为有效正整数）
  * @returns {Promise} 响应结果（含评价详情列表数据）
  */
 export function getEvaluationDetails(courseId) {
+    // 校验课程ID有效性
+    if (!isValidCourseId(courseId)) {
+        return Promise.reject(new Error('课程ID无效'));
+    }
+
     return request({
         url: `/api/evaluations/details/${courseId}`,
         method: 'get'
     });
+}
+
+// 工具函数：校验课程ID有效性
+function isValidCourseId(id) {
+    return !isNaN(id) && id > 0;
 }
